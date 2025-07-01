@@ -1,8 +1,7 @@
 import React from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useFilters } from '../context/FilterContext'; // Import our custom hook
+import { useFilters } from '../context/FilterContext';
 
-// A reusable Checkbox component
 const Checkbox = ({ label, value, onValueChange }: { label: string; value: boolean; onValueChange: () => void }) => (
   <Pressable style={styles.checkboxContainer} onPress={onValueChange}>
     <View style={[styles.checkbox, value && styles.checkboxChecked]}>
@@ -43,6 +42,11 @@ export default function SettingsScreen() {
           label="Parking Decks"
           value={filters.parkingDeck}
           onValueChange={() => toggleFilter('parkingDeck')}
+        />
+        <Checkbox
+          label="Faculty/Staff Parking"
+          value={filters.facultyStaff}
+          onValueChange={() => toggleFilter('facultyStaff')}
         />
         <Checkbox
           label="Downtown Public Parking"

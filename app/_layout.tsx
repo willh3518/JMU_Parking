@@ -1,11 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Text } from 'react-native';
-import { FilterProvider } from '../context/FilterContext'; // Import the provider
+import { FilterProvider } from '../context/FilterContext';
 
 export default function TabLayout() {
   return (
-    // Wrap the entire app with the FilterProvider
     <FilterProvider>
       <Tabs
         screenOptions={{

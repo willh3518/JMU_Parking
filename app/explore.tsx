@@ -13,14 +13,13 @@ import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
 
-// Type definitions remain the same
 type ParkingSpot = {
   attributes: {
     OBJECTID: number;
     ParkingName: string;
     address: string;
     ChangeTimingGroup: string | null;
-    Type?: 'Commuter' | 'Resident' | 'Parking Deck' | 'Downtown';
+    Type?: 'Commuter' | 'Resident' | 'Parking Deck' | 'Downtown' | 'Faculty/Staff';
   };
   geometry: {
     rings: number[][][];
@@ -30,7 +29,7 @@ type ParkingSpot = {
 type JmuParkingSpot = {
   name: string;
   address: string;
-  type: 'Parking Deck' | 'Commuter' | 'Resident';
+  type: 'Parking Deck' | 'Commuter' | 'Resident' | 'Faculty/Staff';
   timing: string;
   polygon: number[][];
 };
@@ -65,7 +64,6 @@ export default function ExploreScreen() {
   const { filters } = useFilters();
 
   useEffect(() => {
-    // Data fetching logic remains the same
     const fetchAndCombineData = async () => {
       try {
         const response = await fetch('https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326');
@@ -97,18 +95,17 @@ export default function ExploreScreen() {
   }, []);
 
   const filteredParkingData = useMemo(() => {
-    // Filtering logic remains the same
     return allParkingData.filter(spot => {
       const type = spot.attributes.Type;
       if (type === 'Commuter' && filters.commuter) return true;
       if (type === 'Resident' && filters.resident) return true;
       if (type === 'Parking Deck' && filters.parkingDeck) return true;
       if (type === 'Downtown' && filters.downtown) return true;
+      if (type === 'Faculty/Staff' && filters.facultyStaff) return true;
       return false;
     });
   }, [filters, allParkingData]);
   
-  // --- ADDED THIS HELPER FUNCTION BACK ---
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
     const centroid = allPoints.reduce(
@@ -137,20 +134,16 @@ export default function ExploreScreen() {
     }
   };
   
-  // --- ADDED THIS FUNCTION BACK ---
   const openDirections = () => {
     if (!selectedSpot) return;
-
     const centroid = getPolygonCentroid(selectedSpot.geometry.rings);
     const { latitude, longitude } = centroid;
     const latLng = `${latitude},${longitude}`;
-
     const options = [
       { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`), style: 'default' as const },
       { text: 'Waze', onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`), style: 'default' as const },
       { text: 'Cancel', style: 'cancel' as const },
     ];
-    
     if (Platform.OS === 'ios') {
       options.unshift({
         text: 'Apple Maps',
@@ -158,8 +151,37 @@ export default function ExploreScreen() {
         style: 'default' as const,
       });
     }
-
     Alert.alert('Get Directions', 'Choose a maps app', options);
+  };
+
+  const getParkingColors = (spot: ParkingSpot) => {
+    const type = spot.attributes.Type;
+    let fillColor = 'rgba(128, 128, 128, 0.4)'; 
+    let strokeColor = '#808080';
+
+    if (type === 'Commuter') {
+      fillColor = 'rgba(0, 0, 139, 0.4)'; 
+      strokeColor = '#8A2BE2'; 
+    } else if (type === 'Resident') {
+      fillColor = 'rgba(173, 216, 230, 0.5)';
+      strokeColor = '#8A2BE2';
+    } else if (type === 'Parking Deck') {
+      fillColor = 'rgba(138, 43, 226, 0.4)'; 
+      strokeColor = '#8A2BE2';
+    } else if (type === 'Faculty/Staff') {
+        fillColor = 'rgba(255, 0, 0, 0.3)'; 
+        strokeColor = '#8A2BE2'; 
+    } else if (type === 'Downtown') {
+      fillColor = 'rgba(60, 179, 113, 0.5)'; 
+      strokeColor = '#3CB371'; 
+    }
+    
+    if (selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID) {
+      fillColor = 'rgba(255, 215, 0, 0.6)'; 
+      strokeColor = '#FFD700'; 
+    }
+    
+    return { fillColor, strokeColor };
   };
 
   if (isLoading) {
@@ -187,16 +209,15 @@ export default function ExploreScreen() {
             latitude: point[1],
             longitude: point[0],
           }));
+          const colors = getParkingColors(spot);
+
           return (
             <Polygon
               key={spot.attributes.OBJECTID}
               coordinates={coordinates}
-              strokeColor="#007AFF"
-              fillColor={
-                selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID
-                  ? 'rgba(255, 215, 0, 0.5)'
-                  : 'rgba(0, 122, 255, 0.3)'
-              }
+              strokeColor={colors.strokeColor}
+              fillColor={colors.fillColor}
+              strokeWidth={2}
               tappable={false}
             />
           );
@@ -205,11 +226,13 @@ export default function ExploreScreen() {
 
       {selectedSpot && (
         <View style={styles.infoBox}>
+           <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
+             <Text style={styles.closeButtonText}>✕</Text>
+          </Pressable>
           <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
           <Text style={styles.infoDescription}>
             {selectedSpot.attributes.ChangeTimingGroup || 'No specific timing info available.'}
           </Text>
-          {/* --- ADDED THIS BUTTON BACK --- */}
           <Pressable onPress={openDirections} style={styles.directionsButton}>
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
@@ -242,13 +265,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 5,
+    paddingRight: 25,
   },
   infoDescription: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 15, // Added margin back
+    marginBottom: 15,
   },
-  // --- ADDED THESE STYLES BACK ---
   directionsButton: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
@@ -259,5 +282,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#eee',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: 'bold',
   },
 });
