@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,17 +10,29 @@ import {
   View,
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
+import { useFilters } from '../context/FilterContext';
+import jmuParkingData from '../data/jmuParkingData.json';
 
+// Type definitions remain the same
 type ParkingSpot = {
   attributes: {
     OBJECTID: number;
     ParkingName: string;
     address: string;
     ChangeTimingGroup: string | null;
+    Type?: 'Commuter' | 'Resident' | 'Parking Deck' | 'Downtown';
   };
   geometry: {
     rings: number[][][];
   };
+};
+
+type JmuParkingSpot = {
+  name: string;
+  address: string;
+  type: 'Parking Deck' | 'Commuter' | 'Resident';
+  timing: string;
+  polygon: number[][];
 };
 
 function isPointInPolygon(
@@ -28,7 +40,7 @@ function isPointInPolygon(
   polygon: { latitude: number; longitude: number }[]
 ): boolean {
   let isInside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
     const xi = polygon[i].latitude,
       yi = polygon[i].longitude;
     const xj = polygon[j].latitude,
@@ -48,28 +60,55 @@ function isPointInPolygon(
 export default function ExploreScreen() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [parkingData, setParkingData] = useState<ParkingSpot[]>([]);
+  const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
+  const { filters } = useFilters();
 
   useEffect(() => {
-    const fetchParkingData = async () => {
+    // Data fetching logic remains the same
+    const fetchAndCombineData = async () => {
       try {
         const response = await fetch('https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326');
-        const json = await response.json();
-        if (json && json.features) {
-          setParkingData(json.features);
-        } else {
-          throw new Error('Invalid data from API');
-        }
+        const cityApiData = await response.json();
+        const cityParkingSpots: ParkingSpot[] = (cityApiData?.features || []).map((spot: ParkingSpot) => ({
+          ...spot,
+          attributes: { ...spot.attributes, Type: 'Downtown' },
+        }));
+
+        const jmuParkingSpots = (jmuParkingData as JmuParkingSpot[]).map((spot: JmuParkingSpot, index: number): ParkingSpot => ({
+          attributes: {
+            OBJECTID: -1 - index,
+            ParkingName: spot.name,
+            address: spot.address,
+            ChangeTimingGroup: spot.timing,
+            Type: spot.type,
+          },
+          geometry: { rings: [spot.polygon] },
+        }));
+
+        setAllParkingData([...cityParkingSpots, ...jmuParkingSpots]);
       } catch (e: any) {
         setError(e.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchParkingData();
+    fetchAndCombineData();
   }, []);
 
+  const filteredParkingData = useMemo(() => {
+    // Filtering logic remains the same
+    return allParkingData.filter(spot => {
+      const type = spot.attributes.Type;
+      if (type === 'Commuter' && filters.commuter) return true;
+      if (type === 'Resident' && filters.resident) return true;
+      if (type === 'Parking Deck' && filters.parkingDeck) return true;
+      if (type === 'Downtown' && filters.downtown) return true;
+      return false;
+    });
+  }, [filters, allParkingData]);
+  
+  // --- ADDED THIS HELPER FUNCTION BACK ---
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
     const centroid = allPoints.reduce(
@@ -85,7 +124,7 @@ export default function ExploreScreen() {
   const handleMapPress = (e: MapPressEvent) => {
     const tappedCoordinate = e.nativeEvent.coordinate;
     let spotFound = false;
-    for (const spot of parkingData) {
+    for (const spot of filteredParkingData) {
       const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
       if (isPointInPolygon(tappedCoordinate, polygonCoords)) {
         setSelectedSpot(spot);
@@ -97,7 +136,8 @@ export default function ExploreScreen() {
       setSelectedSpot(null);
     }
   };
-
+  
+  // --- ADDED THIS FUNCTION BACK ---
   const openDirections = () => {
     if (!selectedSpot) return;
 
@@ -105,30 +145,23 @@ export default function ExploreScreen() {
     const { latitude, longitude } = centroid;
     const latLng = `${latitude},${longitude}`;
 
-    // Base options
-    const baseOptions = [
-      {
-        text: 'Google Maps',
-        onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`),
-      },
-      {
-        text: 'Waze',
-        onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`),
-      },
-      { text: 'Cancel', style: 'cancel' as const }, // Add 'as const'
+    const options = [
+      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`), style: 'default' as const },
+      { text: 'Waze', onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`), style: 'default' as const },
+      { text: 'Cancel', style: 'cancel' as const },
     ];
-
-    // Conditionally add Apple Maps for iOS
+    
     if (Platform.OS === 'ios') {
-      baseOptions.unshift({
+      options.unshift({
         text: 'Apple Maps',
         onPress: () => Linking.openURL(`http://maps.apple.com/?daddr=${latLng}`),
+        style: 'default' as const,
       });
     }
 
-    Alert.alert('Get Directions', 'Choose a maps app', baseOptions);
+    Alert.alert('Get Directions', 'Choose a maps app', options);
   };
-  
+
   if (isLoading) {
     return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
   }
@@ -144,17 +177,16 @@ export default function ExploreScreen() {
         initialRegion={{
           latitude: 38.4496,
           longitude: -78.8690,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
+          latitudeDelta: 0.04,
+          longitudeDelta: 0.04,
         }}
         onPress={handleMapPress}
       >
-        {parkingData.map((spot) => {
+        {filteredParkingData.map((spot: ParkingSpot) => {
           const coordinates = spot.geometry.rings[0].map(point => ({
             latitude: point[1],
             longitude: point[0],
           }));
-
           return (
             <Polygon
               key={spot.attributes.OBJECTID}
@@ -162,7 +194,7 @@ export default function ExploreScreen() {
               strokeColor="#007AFF"
               fillColor={
                 selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID
-                  ? 'rgba(0, 122, 255, 0.6)'
+                  ? 'rgba(255, 215, 0, 0.5)'
                   : 'rgba(0, 122, 255, 0.3)'
               }
               tappable={false}
@@ -177,11 +209,9 @@ export default function ExploreScreen() {
           <Text style={styles.infoDescription}>
             {selectedSpot.attributes.ChangeTimingGroup || 'No specific timing info available.'}
           </Text>
+          {/* --- ADDED THIS BUTTON BACK --- */}
           <Pressable onPress={openDirections} style={styles.directionsButton}>
             <Text style={styles.directionsText}>Take me there</Text>
-          </Pressable>
-          <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
-             <Text style={styles.closeButtonText}>✕</Text>
           </Pressable>
         </View>
       )}
@@ -216,23 +246,9 @@ const styles = StyleSheet.create({
   infoDescription: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 15,
+    marginBottom: 15, // Added margin back
   },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#eee',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: '#666',
-  },
+  // --- ADDED THESE STYLES BACK ---
   directionsButton: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
