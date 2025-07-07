@@ -1,7 +1,10 @@
+import * as Location from 'expo-location';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
+  AppStateStatus,
   Linking,
   Platform,
   Pressable,
@@ -11,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
 
@@ -87,10 +91,35 @@ export default function ExploreScreen() {
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const { filters } = useFilters();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [permissionStatus, setPermissionStatus] = useState<Location.PermissionStatus | null>(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
+  }, []);
+  
+  // This new useEffect listens for when the user returns to the app
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        // Re-check permissions when the app becomes active
+        const { status } = await Location.getForegroundPermissionsAsync();
+        setPermissionStatus(status);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // This useEffect now only runs once on the initial screen load
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      setPermissionStatus(status);
+    })();
   }, []);
 
   useEffect(() => {
@@ -267,6 +296,8 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <MapView
+      showsUserLocation={true}
+      
         style={styles.map}
         initialRegion={{
           latitude: 38.4496,
@@ -295,7 +326,17 @@ export default function ExploreScreen() {
           );
         })}
       </MapView>
-
+      {permissionStatus === 'denied' && (
+        <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>
+          <Text style={styles.permissionText}>Location permission is needed to show your position.</Text>
+          <Pressable 
+            style={styles.permissionButton} 
+            onPress={() => Linking.openSettings()}
+          >
+            <Text style={styles.permissionButtonText}>Enable Location in Settings</Text>
+          </Pressable>
+        </View>
+      )}
       {selectedSpot && (
         <View style={styles.infoBox}>
            <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
@@ -383,5 +424,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: 'bold',
+  },
+  permissionOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 20,
+    alignItems: 'center',
+  },
+  permissionText: {
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  permissionButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  permissionButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
