@@ -1,4 +1,3 @@
-import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MainScreen() {
@@ -6,21 +5,21 @@ export default function MainScreen() {
     <SafeAreaView style={styles.wrapper}>
       <View style={styles.container}>
         <Text style={styles.title}>Park Harrisonburg</Text>
-        <Text style={styles.subtitle}>Find your spot</Text>
+        
+        {/* New description */}
+        <Text style={styles.description}>
+          Welcome! This app helps you find available parking at JMU and in downtown Harrisonburg.
+        </Text>
+        <Text style={styles.description}>
+          Use the 'Explore' tab to see the map and the 'Settings' tab to filter by parking type.
+        </Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => alert('Login Pressed!')}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button} onPress={() => alert('Sign Up Pressed!')}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-
+        {/* Updated Continue button */}
         <TouchableOpacity
-          style={[styles.button, styles.guestButton]}
-          onPress={() => alert('Continuing as Guest!')}
+          style={styles.button}
+          onPress={() => alert('Welcome!')}
         >
-          <Text style={[styles.buttonText, styles.guestButtonText]}>Continue as Guest</Text>
+          <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -36,18 +35,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 40, // Added more padding
   },
   title: {
     fontSize: 42,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 25, // Adjusted spacing
   },
-  subtitle: {
+  description: {
     fontSize: 18,
     color: '#666',
-    marginBottom: 40,
+    textAlign: 'center',
+    marginBottom: 15, // Spacing between description lines
   },
   button: {
     backgroundColor: '#007AFF',
@@ -56,23 +56,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    marginTop: 30, // Added spacing above the button
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-  },
-  guestButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#007AFF',
-  },
-  guestButtonText: {
-    color: '#007AFF',
   },
 });

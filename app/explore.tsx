@@ -5,6 +5,7 @@ import {
   Linking,
   Platform,
   Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -13,6 +14,7 @@ import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
 
+// Type Definitions
 type ParkingSpot = {
   attributes: {
     OBJECTID: number;
@@ -20,6 +22,7 @@ type ParkingSpot = {
     address: string;
     ChangeTimingGroup: string | null;
     Type?: 'Commuter' | 'Resident' | 'Parking Deck' | 'Downtown' | 'Faculty/Staff';
+    isConditional?: boolean;
   };
   geometry: {
     rings: number[][][];
@@ -32,8 +35,10 @@ type JmuParkingSpot = {
   type: 'Parking Deck' | 'Commuter' | 'Resident' | 'Faculty/Staff';
   timing: string;
   polygon: number[][];
+  isConditional?: boolean;
 };
 
+// Helper function to check if a point is inside a polygon
 function isPointInPolygon(
   point: { latitude: number; longitude: number },
   polygon: { latitude: number; longitude: number }[]
@@ -56,14 +61,40 @@ function isPointInPolygon(
   return isInside;
 }
 
+// --- NEW HELPER FUNCTION TO CALCULATE AREA ---
+function getPolygonArea(polygon: { latitude: number; longitude: number }[]): number {
+  let area = 0;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    area += polygon[i].longitude * polygon[j].latitude - polygon[j].longitude * polygon[i].latitude;
+  }
+  return Math.abs(area / 2);
+}
+
+// isCommuterParkingAvailable helper function
+const isCommuterParkingAvailable = (): boolean => {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  if (day === 0 || day === 6) return true;
+  if (day >= 1 && day <= 5 && hour >= 16) return true;
+  return false;
+};
+
 export default function ExploreScreen() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const { filters } = useFilters();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    // Data fetching and combining logic...
     const fetchAndCombineData = async () => {
       try {
         const response = await fetch('https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326');
@@ -80,6 +111,7 @@ export default function ExploreScreen() {
             address: spot.address,
             ChangeTimingGroup: spot.timing,
             Type: spot.type,
+            isConditional: spot.isConditional,
           },
           geometry: { rings: [spot.polygon] },
         }));
@@ -95,16 +127,18 @@ export default function ExploreScreen() {
   }, []);
 
   const filteredParkingData = useMemo(() => {
+    // Filtering logic...
+    const isAvailableNow = isCommuterParkingAvailable();
     return allParkingData.filter(spot => {
       const type = spot.attributes.Type;
       if (type === 'Commuter' && filters.commuter) return true;
       if (type === 'Resident' && filters.resident) return true;
       if (type === 'Parking Deck' && filters.parkingDeck) return true;
       if (type === 'Downtown' && filters.downtown) return true;
-      if (type === 'Faculty/Staff' && filters.facultyStaff) return true;
+      if (type === 'Faculty/Staff' && (filters.facultyStaff || (isAvailableNow && spot.attributes.isConditional && filters.commuter))) return true;
       return false;
     });
-  }, [filters, allParkingData]);
+  }, [filters, allParkingData, currentTime]);
   
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
@@ -117,21 +151,34 @@ export default function ExploreScreen() {
     );
     return centroid;
   };
-
+  
+  // --- UPDATED MAP PRESS HANDLER ---
   const handleMapPress = (e: MapPressEvent) => {
     const tappedCoordinate = e.nativeEvent.coordinate;
-    let spotFound = false;
-    for (const spot of filteredParkingData) {
+    
+    const tappedPolygons = filteredParkingData.filter(spot => {
       const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
-      if (isPointInPolygon(tappedCoordinate, polygonCoords)) {
-        setSelectedSpot(spot);
-        spotFound = true;
-        break;
-      }
-    }
-    if (!spotFound) {
+      return isPointInPolygon(tappedCoordinate, polygonCoords);
+    });
+
+    if (tappedPolygons.length === 0) {
       setSelectedSpot(null);
+      return;
     }
+
+    let smallestSpot = tappedPolygons[0];
+    let minArea = Infinity;
+
+    tappedPolygons.forEach(spot => {
+      const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
+      const area = getPolygonArea(polygonCoords);
+      if (area < minArea) {
+        minArea = area;
+        smallestSpot = spot;
+      }
+    });
+    
+    setSelectedSpot(smallestSpot);
   };
   
   const openDirections = () => {
@@ -155,7 +202,12 @@ export default function ExploreScreen() {
   };
 
   const getParkingColors = (spot: ParkingSpot) => {
-    const type = spot.attributes.Type;
+    let type = spot.attributes.Type;
+    const isAvailableNow = isCommuterParkingAvailable();
+    if (spot.attributes.isConditional && isAvailableNow) {
+      type = 'Commuter';
+    }
+    
     let fillColor = 'rgba(128, 128, 128, 0.4)'; 
     let strokeColor = '#808080';
 
@@ -184,6 +236,26 @@ export default function ExploreScreen() {
     return { fillColor, strokeColor };
   };
 
+  const formatDescription = (spot: ParkingSpot) => {
+    const timing = spot.attributes.ChangeTimingGroup;
+    if (!timing) {
+      return <Text style={styles.infoDescription}>No specific timing info available.</Text>;
+    }
+    
+    const keyword = "Faculty and Staff Lot";
+    if (timing.includes(keyword)) {
+        const parts = timing.split(keyword);
+      return (
+        <View>
+            <Text style={[styles.infoDescription, { fontWeight: 'bold', color: '#8A2BE2', marginBottom: 2 }]}>{keyword}</Text>
+            <Text style={styles.infoDescription}>{parts[1] || ''}</Text>
+        </View>
+      );
+    }
+    
+    return <Text style={styles.infoDescription}>{timing}</Text>;
+  };
+
   if (isLoading) {
     return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
   }
@@ -193,7 +265,7 @@ export default function ExploreScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <MapView
         style={styles.map}
         initialRegion={{
@@ -230,20 +302,26 @@ export default function ExploreScreen() {
              <Text style={styles.closeButtonText}>✕</Text>
           </Pressable>
           <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
-          <Text style={styles.infoDescription}>
-            {selectedSpot.attributes.ChangeTimingGroup || 'No specific timing info available.'}
-          </Text>
+          
+          {formatDescription(selectedSpot)}
+          
+          {selectedSpot.attributes.Type === 'Faculty/Staff' && !selectedSpot.attributes.isConditional && (
+             <Text style={styles.conditionalText}>
+                This lot is restricted to Faculty/Staff at all times.
+             </Text>
+          )}
+
           <Pressable onPress={openDirections} style={styles.directionsButton}>
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#fff' },
   map: { width: '100%', height: '100%' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: 'red' },
@@ -270,6 +348,12 @@ const styles = StyleSheet.create({
   infoDescription: {
     fontSize: 16,
     color: '#333',
+    marginBottom: 8,
+  },
+  conditionalText: {
+    fontSize: 14,
+    color: '#e67e22',
+    fontStyle: 'italic',
     marginBottom: 15,
   },
   directionsButton: {
@@ -277,6 +361,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',
+    marginTop: 5,
   },
   directionsText: {
     color: 'white',

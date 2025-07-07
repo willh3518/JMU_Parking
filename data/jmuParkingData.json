@@ -48,7 +48,7 @@
     "name": "R2 Lot",
     "address": "Hillside Ave, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Parking",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
       [-78.87679357435584, 38.43097058102052], [-78.87847135766032, 38.42979619315924], [-78.8775272058367, 38.428996599007526], [-78.87759737928305, 38.42874172651086], [-78.87729116788078, 38.4283319296303], [-78.87689564481953, 38.4286717613544], [-78.87647460414142, 38.42939639719009], [-78.87706788873331, 38.430345909002696], [-78.87653839818356, 38.43074070234472], [-78.87679357435584, 38.43097058102052]
     ]
@@ -93,7 +93,7 @@
     "name": "R6 Lot",
     "address": "Paul Jennings Hall, 831 University Blvd, Harrisonburg, VA 22807",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.86568190169872, 38.43002093312424], [-78.86587328382512, 38.430458206070156], [-78.8668270047536, 38.43015336463853], [-78.86665157113772, 38.429763565523594], [-78.86568190169872, 38.43002093312424]
     ]
@@ -102,7 +102,7 @@
     "name": "R5 Lot",
     "address": "664 University Blvd, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.85982332332459, 38.42883037029779], [-78.86046973570694, 38.42950695063663], [-78.86010495527378, 38.42970025814052], [-78.8595282803243, 38.4291371435352], [-78.85982332332459, 38.42883037029779]
     ]
@@ -120,7 +120,7 @@
     "name": "R4 Lot",
     "address": "511 Soccer Field Service Dr, Harrisonburg, VA 22807",
     "type": "Resident",
-    "timing": "Resident Student Parking",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.85636735505928, 38.43283386408898], [-78.85701376744451, 38.43190098097297], [-78.85610449857067, 38.43202074366895], [-78.85620105809708, 38.43284647053503], [-78.85637003726835, 38.43285277375723], [-78.85636735505928, 38.43283386408898]
     ]
@@ -156,7 +156,7 @@
     "name": "R1 Lot",
     "address": "Parking Lot",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.86335634203205, 38.43737638970526], [-78.86476718398174, 38.437695732237934], [-78.86518829080534, 38.437660016367374], [-78.86506490918822, 38.43729025102191], [-78.86558793994602, 38.43712637713466], [-78.86588030072897, 38.436922584731995], [-78.86576496573906, 38.4366347532488], [-78.86335097760717, 38.437204112227256], [-78.86337779969786, 38.43736168310655], [-78.86335634203205, 38.43737638970526]
     ]
@@ -165,7 +165,7 @@
     "name": "R8 Lot",
     "address": "650 Duke Dr, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.86293709276696, 38.43743218199231], [-78.86302560566618, 38.437669587902505], [-78.86403143404864, 38.43783556148303], [-78.86439889669087, 38.437713707499725], [-78.86392579136404, 38.43756168917261], [-78.86292264517283, 38.43742933002381], [-78.86293709276696, 38.43743218199231]
     ]
@@ -210,7 +210,7 @@
     "name": "R9 Lot",
     "address": "Parking Lot",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.8797428431643, 38.445448576757784], [-78.8794361006057, 38.44604564362268], [-78.87979471874407, 38.44617812820414], [-78.88010597222265, 38.445593427752755], [-78.8797428431643, 38.445448576757784]
     ]
@@ -219,7 +219,7 @@
     "name": "R14, R15, R16 Lots",
     "address": "320 Chesapeake Ave, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.87662874184885, 38.4429019498583], [-78.87575250885115, 38.44371301566688], [-78.87606355259925, 38.443941776170156], [-78.87676909085712, 38.44363577169681], [-78.87739876478622, 38.44332085311723], [-78.87662874184885, 38.4429019498583]
     ]
@@ -228,7 +228,7 @@
     "name": "R13 Lot",
     "address": "Parking Lot",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.87671598582304, 38.44436364429188], [-78.87642390815715, 38.44412300151284], [-78.87721669039317, 38.44385561970625], [-78.87733807331925, 38.44412300151284], [-78.87671598582304, 38.44436364429188]
     ]
@@ -237,7 +237,7 @@
     "name": "R3 Lot",
     "address": "1161 Harrison St, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.88004446345094, 38.43734959293593], [-78.87867890553244, 38.43861233434798], [-78.87925926764781, 38.438924302353115], [-78.87988894157688, 38.43772693209538], [-78.88004446345094, 38.43734959293593]
     ]
@@ -246,7 +246,7 @@
     "name": "R17 & R19 Lot",
     "address": "1170 Harrison St, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.88004052553576, 38.43714289559845], [-78.87965138187874, 38.43749018121124], [-78.87923991030695, 38.437205357162796], [-78.87960991575135, 38.436863067126694], [-78.88004052553576, 38.43714289559845]
     ]
@@ -255,7 +255,7 @@
     "name": "R20 Lot",
     "address": "8 Port Republic Rd, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.87947084681463, 38.43590236005933], [-78.8794101553516, 38.43567060282613], [-78.87888479487462, 38.43614897270844], [-78.8793172215488, 38.4364059837897], [-78.87963964494622, 38.43616382886521], [-78.87955619418453, 38.43609549051874], [-78.879637748338, 38.436022695252404], [-78.87947084681463, 38.43590236005933]
     ]
@@ -264,7 +264,7 @@
     "name": "R19 Lot",
     "address": "Parking Lot",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.87871766606985, 38.43633202307612], [-78.87911195080275, 38.436603048049484], [-78.87892151395897, 38.43677952888051], [-78.87850308934445, 38.43652531230846], [-78.87871766606985, 38.43633202307612]
     ]
@@ -273,7 +273,7 @@
     "name": "R10 Lot",
     "address": "Parking Lot",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
         [-78.87775988736793, 38.42567288293349], [-78.87668628841773, 38.42656342592199], [-78.87591943202122, 38.42721365671605], [-78.87501273710707, 38.42786034784588], [-78.87487740950769, 38.427743731841616], [-78.87559013486444, 38.42717831824194], [-78.8755766021045, 38.42684260182261], [-78.87558111302448, 38.42672951804579], [-78.87743510112014, 38.4252417431031], [-78.87775988736793, 38.42567288293349]
     ]
@@ -318,7 +318,7 @@
     "name": "R12 Lot",
     "address": "400 S High St, Harrisonburg, VA 22801",
     "type": "Resident",
-    "timing": "Resident Student Lot",
+    "timing": "Resident Student Lot (Open to Commuters 24/7)",
     "polygon": [
       [-78.8779601454641, 38.44345742860873], [-78.87822970747538, 38.443592927846915], [-78.87843891978264, 38.44357612175366], [-78.87873932719819, 38.44344272324976], [-78.8784496486189, 38.44320218516682], [-78.8779601454641, 38.44345742860873]
     ]
@@ -327,7 +327,8 @@
     "name": "L Lot",
     "address": "298 Port Republic Rd, Harrisonburg, VA 22807",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing":  "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87603901326312, 38.43119395678274], [-78.8756795972481, 38.43127590050381], [-78.87577079235638, 38.43165830330588], [-78.87625358998852, 38.43158476446276], [-78.87603901326312, 38.43119395678274]
     ]
@@ -336,7 +337,8 @@
     "name": "P Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87393319101761, 38.43189858274945], [-78.87279143287286, 38.43279891333297], [-78.87164208830853, 38.43348529644064], [-78.87153967148105, 38.433372385390406], [-78.87228693510453, 38.432885083005104], [-78.87265108386897, 38.43266520157926], [-78.87377766914364, 38.4317945834395], [-78.87393319101761, 38.43189858274945]
     ]
@@ -345,7 +347,8 @@
     "name": "F Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87194648652395, 38.434274154241486], [-78.87166898244065, 38.43471889707398], [-78.87097043767925, 38.43477136655331], [-78.87058767342643, 38.434673923204194], [-78.870992765594, 38.43411674460506], [-78.87143294448475, 38.43398182178642], [-78.87194648652395, 38.434274154241486]
     ]
@@ -354,7 +357,8 @@
     "name": "G Lot",
     "address": "211 Bluestone Dr, Harrisonburg, VA 22807",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87011068260327, 38.43614041792883], [-78.87032584008311, 38.43496874279557], [-78.87051084280318, 38.435043698921184], [-78.87080429539701, 38.43602811551329], [-78.87011068260327, 38.43614041792883]
     ]
@@ -363,6 +367,7 @@
     "name": "Convocation Lot - C",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.86978540462393, 38.431675219814], [-78.870046920008, 38.431606933763874], [-78.86999193472211, 38.4314514514396], [-78.8697210316063, 38.43151658596752], [-78.86978540462393, 38.431675219814]
@@ -371,7 +376,8 @@
   {
     "name": "D8 Lot",
     "address": "1101 Driver Drive, Harrisonburg, VA 22807",
-    "type": "Faculty/Staff",
+    "type": "Faculty/Staff/Commuter",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.86454789342962, 38.432573309040016], [-78.86472089591447, 38.43280337716434], [-78.86500118676202, 38.43263213931509], [-78.8648255020681, 38.43240522227573], [-78.86454789342962, 38.432573309040016]
@@ -381,7 +387,8 @@
     "name": "D3 Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.85733151211276, 38.432524067568906], [-78.85787695117304, 38.43189191305715], [-78.85835540648907, 38.43222922939441], [-78.85785781296039, 38.432796417016355], [-78.85733151211276, 38.432524067568906]
     ]
@@ -389,8 +396,9 @@
   {
     "name": "D1 Lot",
     "address": "Parking Lot",
-    "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "type":"Faculty/Staff",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.85977868730268, 38.433720334716696], [-78.86012386999873, 38.43374261970033], [-78.86007455818502, 38.43432202686059], [-78.85947333337923, 38.43431162728586], [-78.85977868730268, 38.433720334716696]
     ]
@@ -399,7 +407,8 @@
     "name": "D2 Lot",
     "address": "900 Carrier Dr, Harrisonburg, VA 22807",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.85989947682296, 38.43486142528607], [-78.85988990771664, 38.43454161112355], [-78.86139225740078, 38.43457159376158], [-78.86236830623022, 38.434646550301736], [-78.86269365584512, 38.43473899659428], [-78.86258201627138, 38.434826445681004], [-78.86230132248598, 38.43494887422443], [-78.86138268828499, 38.434903900498135], [-78.85989947682296, 38.43486142528607]
     ]
@@ -408,7 +417,8 @@
     "name": "Y Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87750184249391, 38.44452238049809], [-78.8776822792931, 38.44460363945193], [-78.87865889346865, 38.44415318105568], [-78.87855288684914, 38.44400479414487], [-78.87750184249391, 38.44452238049809]
     ]
@@ -417,6 +427,7 @@
     "name": "X Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.87777700860981, 38.44462483742518], [-78.87803413104864, 38.444584207971644], [-78.87865663800581, 38.44431040018822], [-78.87866340438578, 38.444351029795925], [-78.8780837511684, 38.444623070927676], [-78.8777995632097, 38.44466016736621], [-78.87777700860981, 38.44462483742518]
@@ -426,7 +437,8 @@
     "name": "N Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.86861414949917, 38.43935719070891], [-78.86875449850746, 38.43917149674372], [-78.86837707347166, 38.43892637997825], [-78.86799964843586, 38.43915069898987], [-78.86861414949917, 38.43935719070891]
     ]
@@ -435,6 +447,7 @@
     "name": "A Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.87303661864716, 38.43748645888064], [-78.87338170402558, 38.437694925897574], [-78.8736410819244, 38.437451125428275], [-78.87328471924602, 38.43724795774158], [-78.87303661864716, 38.43748645888064]
@@ -444,7 +457,8 @@
     "name": "W Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87576299846053, 38.43702161538565], [-78.87570989343037, 38.4371285783533], [-78.87495314675056, 38.43662644526974], [-78.87507263306841, 38.436526909598776], [-78.87576299846053, 38.43702161538565]
     ]
@@ -453,7 +467,8 @@
     "name": "K Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87682749414648, 38.43819286368194], [-78.87692956461392, 38.43812790454245], [-78.87726129363303, 38.43833027705363], [-78.87752284920579, 38.43809542495078], [-78.87648300631895, 38.437435836235395], [-78.87682749414648, 38.43819286368194]
     ]
@@ -462,7 +477,8 @@
     "name": "T & J Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87734633848046, 38.438841706150875], [-78.87784704305058, 38.43915367316477], [-78.87753599930247, 38.439435927872765], [-78.87726668093522, 38.43921012419464], [-78.8774259960257, 38.43906008320214], [-78.87714150479269, 38.43886844623346], [-78.87734633848046, 38.438841706150875]
     ]
@@ -471,7 +487,8 @@
     "name": "E Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87881905339499, 38.439289710562676], [-78.87908727430172, 38.439415763651866], [-78.87851328156133, 38.440151068951764], [-78.87817264100975, 38.440020815415956], [-78.8778963734758, 38.43941156188576], [-78.87802243730198, 38.43923928926536], [-78.87848377726158, 38.439518706844744], [-78.87881905339499, 38.439289710562676]
     ]
@@ -480,6 +497,7 @@
     "name": "V Lot",
     "address": "71 E Grace St, Harrisonburg, VA 22801",
     "type": "Faculty/Staff",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.87417829523898, 38.43968324684132], [-78.87408346482798, 38.43976940828974], [-78.87392983956215, 38.43969810227079], [-78.87369845335928, 38.43991944780792], [-78.87353155183592, 38.43982437329795], [-78.87388621757309, 38.43950052480866], [-78.87417829523898, 38.43968324684132]
@@ -489,6 +507,7 @@
     "name": "I Lot",
     "address": "147 Patterson St, Harrisonburg, VA 22801",
     "type": "Faculty/Staff",
+    "isConditional": false,
     "timing": "Faculty and Staff Lot",
     "polygon": [
       [-78.87518648127197, 38.44083453172316], [-78.8759811601162, 38.44124601942631], [-78.87620495988617, 38.44098754006003], [-78.87546907589676, 38.44056862325937], [-78.87518648127197, 38.44083453172316]
@@ -498,7 +517,8 @@
     "name": "S Lot",
     "address": "41 W Grace St, Harrisonburg, VA 22801",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87515669153912, 38.44190940445042], [-78.87575954523732, 38.442216694534835], [-78.87599079864007, 38.44194063317725], [-78.87539751404819, 38.44162209952961], [-78.87515669153912, 38.44190940445042]
     ]
@@ -507,7 +527,8 @@
     "name": "Z Lot",
     "address": "Parking Lot",
     "type": "Faculty/Staff",
-    "timing": "Faculty and Staff Lot",
+    "isConditional": true,
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87860441194577, 38.44615770353233], [-78.87841129289292, 38.44635936917938], [-78.87871438251754, 38.44651481939771], [-78.87890481936131, 38.44630370111436], [-78.87860441194577, 38.44615770353233]
     ]
