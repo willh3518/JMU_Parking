@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +12,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,7 +43,14 @@ type JmuParkingSpot = {
   isConditional?: boolean;
 };
 
-// Helper function to check if a point is inside a polygon
+type Suggestion = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
+}
+
+// Helper functions
 function isPointInPolygon(
   point: { latitude: number; longitude: number },
   polygon: { latitude: number; longitude: number }[]
@@ -53,11 +61,9 @@ function isPointInPolygon(
       yi = polygon[i].longitude;
     const xj = polygon[j].latitude,
       yj = polygon[j].longitude;
-
     const intersect =
       yi > point.longitude !== yj > point.longitude &&
       point.latitude < ((xj - xi) * (point.longitude - yi)) / (yj - yi) + xi;
-
     if (intersect) {
       isInside = !isInside;
     }
@@ -65,16 +71,14 @@ function isPointInPolygon(
   return isInside;
 }
 
-// --- NEW HELPER FUNCTION TO CALCULATE AREA ---
 function getPolygonArea(polygon: { latitude: number; longitude: number }[]): number {
   let area = 0;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
     area += polygon[i].longitude * polygon[j].latitude - polygon[j].longitude * polygon[i].latitude;
   }
   return Math.abs(area / 2);
 }
 
-// isCommuterParkingAvailable helper function
 const isCommuterParkingAvailable = (): boolean => {
   const now = new Date();
   const day = now.getDay();
@@ -93,28 +97,55 @@ export default function ExploreScreen() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [permissionStatus, setPermissionStatus] = useState<Location.PermissionStatus | null>(null);
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams();
+  const mapRef = useRef<MapView>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
   
-  // This new useEffect listens for when the user returns to the app
+  // --- FIX: Separated the nested useEffect hooks ---
+  
+  // This useEffect listens for when the user returns to the app
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active') {
-        // Re-check permissions when the app becomes active
         const { status } = await Location.getForegroundPermissionsAsync();
         setPermissionStatus(status);
       }
     });
-
     return () => {
       subscription.remove();
     };
   }, []);
 
-  // This useEffect now only runs once on the initial screen load
+  useEffect(() => {
+    const { selectedLotId } = params;
+
+    if (selectedLotId && allParkingData.length > 0) {
+      const targetId = Number(selectedLotId);
+      const spotToFocus = allParkingData.find(spot => spot.attributes.OBJECTID === targetId);
+      
+      if (spotToFocus) {
+        const centroid = getPolygonCentroid(spotToFocus.geometry.rings);
+        
+        mapRef.current?.animateToRegion({
+          ...centroid,
+          latitudeDelta: 0.003,
+          longitudeDelta: 0.003,
+        }, 1000); 
+
+        // Just select the spot. This will now be the single source of truth.
+        setSelectedSpot(spotToFocus);
+        
+        router.setParams({ selectedLotId: undefined });
+      }
+    }
+  }, [params, allParkingData]);
+
+  // This useEffect handles the initial permission request
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -122,8 +153,8 @@ export default function ExploreScreen() {
     })();
   }, []);
 
+  // This useEffect fetches all the data
   useEffect(() => {
-    // Data fetching and combining logic...
     const fetchAndCombineData = async () => {
       try {
         const response = await fetch('https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326');
@@ -132,7 +163,6 @@ export default function ExploreScreen() {
           ...spot,
           attributes: { ...spot.attributes, Type: 'Downtown' },
         }));
-
         const jmuParkingSpots = (jmuParkingData as JmuParkingSpot[]).map((spot: JmuParkingSpot, index: number): ParkingSpot => ({
           attributes: {
             OBJECTID: -1 - index,
@@ -144,7 +174,6 @@ export default function ExploreScreen() {
           },
           geometry: { rings: [spot.polygon] },
         }));
-
         setAllParkingData([...cityParkingSpots, ...jmuParkingSpots]);
       } catch (e: any) {
         setError(e.message);
@@ -155,19 +184,26 @@ export default function ExploreScreen() {
     fetchAndCombineData();
   }, []);
 
+
   const filteredParkingData = useMemo(() => {
-    // Filtering logic...
     const isAvailableNow = isCommuterParkingAvailable();
     return allParkingData.filter(spot => {
+      // Rule 1: Always show the spot that is currently selected.
+      if (spot.attributes.OBJECTID === selectedSpot?.attributes.OBJECTID) {
+        return true;
+      }
+
+      // Rule 2: Otherwise, follow the normal filter rules from the Settings page.
       const type = spot.attributes.Type;
       if (type === 'Commuter' && filters.commuter) return true;
       if (type === 'Resident' && filters.resident) return true;
       if (type === 'Parking Deck' && filters.parkingDeck) return true;
       if (type === 'Downtown' && filters.downtown) return true;
       if (type === 'Faculty/Staff' && (filters.facultyStaff || (isAvailableNow && spot.attributes.isConditional && filters.commuter))) return true;
+      
       return false;
     });
-  }, [filters, allParkingData, currentTime]);
+  }, [filters, allParkingData, currentTime, selectedSpot]); // Add selectedSpot to dependencies
   
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
@@ -181,10 +217,9 @@ export default function ExploreScreen() {
     return centroid;
   };
   
-  // --- UPDATED MAP PRESS HANDLER ---
   const handleMapPress = (e: MapPressEvent) => {
     const tappedCoordinate = e.nativeEvent.coordinate;
-    
+
     const tappedPolygons = filteredParkingData.filter(spot => {
       const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
       return isPointInPolygon(tappedCoordinate, polygonCoords);
@@ -216,7 +251,7 @@ export default function ExploreScreen() {
     const { latitude, longitude } = centroid;
     const latLng = `${latitude},${longitude}`;
     const options = [
-      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`), style: 'default' as const },
+      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/place/62+W+Bruce+St,+Harrisonburg,+VA+22801/@38.4474395,-78.8700416,115m/data=!3m1!1e3!4m6!3m5!1s0x89b492cfa20ba235:0x7daec6a9f0478f5!8m2!3d38.4476542!4d-78.8697506!16s%2Fg%2F11tfkrb7gx?entry=ttu2{latLng}`), style: 'default' as const },
       { text: 'Waze', onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`), style: 'default' as const },
       { text: 'Cancel', style: 'cancel' as const },
     ];
@@ -236,10 +271,8 @@ export default function ExploreScreen() {
     if (spot.attributes.isConditional && isAvailableNow) {
       type = 'Commuter';
     }
-    
     let fillColor = 'rgba(128, 128, 128, 0.4)'; 
     let strokeColor = '#808080';
-
     if (type === 'Commuter') {
       fillColor = 'rgba(0, 0, 139, 0.4)'; 
       strokeColor = '#8A2BE2'; 
@@ -256,21 +289,16 @@ export default function ExploreScreen() {
       fillColor = 'rgba(60, 179, 113, 0.5)'; 
       strokeColor = '#3CB371'; 
     }
-    
     if (selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID) {
       fillColor = 'rgba(255, 215, 0, 0.6)'; 
       strokeColor = '#FFD700'; 
     }
-    
     return { fillColor, strokeColor };
   };
 
   const formatDescription = (spot: ParkingSpot) => {
     const timing = spot.attributes.ChangeTimingGroup;
-    if (!timing) {
-      return <Text style={styles.infoDescription}>No specific timing info available.</Text>;
-    }
-    
+    if (!timing) return <Text style={styles.infoDescription}>No specific timing info available.</Text>;
     const keyword = "Faculty and Staff Lot";
     if (timing.includes(keyword)) {
         const parts = timing.split(keyword);
@@ -281,7 +309,6 @@ export default function ExploreScreen() {
         </View>
       );
     }
-    
     return <Text style={styles.infoDescription}>{timing}</Text>;
   };
 
@@ -296,8 +323,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <MapView
-      showsUserLocation={true}
-      
+        ref={mapRef}
         style={styles.map}
         initialRegion={{
           latitude: 38.4496,
@@ -313,7 +339,6 @@ export default function ExploreScreen() {
             longitude: point[0],
           }));
           const colors = getParkingColors(spot);
-
           return (
             <Polygon
               key={spot.attributes.OBJECTID}
@@ -326,6 +351,7 @@ export default function ExploreScreen() {
           );
         })}
       </MapView>
+
       {permissionStatus === 'denied' && (
         <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>
           <Text style={styles.permissionText}>Location permission is needed to show your position.</Text>
@@ -337,21 +363,19 @@ export default function ExploreScreen() {
           </Pressable>
         </View>
       )}
+
       {selectedSpot && (
         <View style={styles.infoBox}>
            <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
              <Text style={styles.closeButtonText}>✕</Text>
           </Pressable>
           <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
-          
           {formatDescription(selectedSpot)}
-          
           {selectedSpot.attributes.Type === 'Faculty/Staff' && !selectedSpot.attributes.isConditional && (
              <Text style={styles.conditionalText}>
                 This lot is restricted to Faculty/Staff at all times.
              </Text>
           )}
-
           <Pressable onPress={openDirections} style={styles.directionsButton}>
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
@@ -366,6 +390,44 @@ const styles = StyleSheet.create({
   map: { width: '100%', height: '100%' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: 'red' },
+  searchWrapper: {
+    position: 'absolute',
+    top: 60,
+    left: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  searchInput: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: 15,
+    fontSize: 16,
+  },
+  suggestionsContainer: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    marginTop: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  suggestionItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
   infoBox: {
     position: 'absolute',
     bottom: 30,

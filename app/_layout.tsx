@@ -26,7 +26,14 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>🗺️</Text>,
           }}
         />
-        {/* Add the new Settings tab */}
+        {/* --- ADD THE NEW TAB HERE --- */}
+        <Tabs.Screen
+          name="list"
+          options={{
+            title: 'List',
+            tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>📄</Text>,
+          }}
+        />
         <Tabs.Screen
           name="settings"
           options={{
