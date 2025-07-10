@@ -100,6 +100,12 @@ export default function ExploreScreen() {
   const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
   const router = useRouter();
+  const initialMapRegion = {
+    latitude: 38.4496,
+    longitude: -78.8690,
+    latitudeDelta: 0.04,
+    longitudeDelta: 0.04,
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -188,6 +194,7 @@ export default function ExploreScreen() {
   const filteredParkingData = useMemo(() => {
     const isAvailableNow = isCommuterParkingAvailable();
     return allParkingData.filter(spot => {
+      // --- THIS IS THE FIX ---
       // Rule 1: Always show the spot that is currently selected.
       if (spot.attributes.OBJECTID === selectedSpot?.attributes.OBJECTID) {
         return true;
@@ -231,17 +238,19 @@ export default function ExploreScreen() {
     }
 
     let smallestSpot = tappedPolygons[0];
-    let minArea = Infinity;
-
-    tappedPolygons.forEach(spot => {
-      const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
-      const area = getPolygonArea(polygonCoords);
-      if (area < minArea) {
-        minArea = area;
-        smallestSpot = spot;
-      }
-    });
+    if (tappedPolygons.length > 1) {
+        let minArea = Infinity;
+        tappedPolygons.forEach(spot => {
+        const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
+        const area = getPolygonArea(polygonCoords);
+        if (area < minArea) {
+            minArea = area;
+            smallestSpot = spot;
+        }
+        });
+    }
     
+    // Always select the determined smallest spot
     setSelectedSpot(smallestSpot);
   };
   
@@ -325,12 +334,8 @@ export default function ExploreScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={{
-          latitude: 38.4496,
-          longitude: -78.8690,
-          latitudeDelta: 0.04,
-          longitudeDelta: 0.04,
-        }}
+        initialRegion={initialMapRegion}
+        showsUserLocation={true}
         onPress={handleMapPress}
       >
         {filteredParkingData.map((spot: ParkingSpot) => {
@@ -339,6 +344,7 @@ export default function ExploreScreen() {
             longitude: point[0],
           }));
           const colors = getParkingColors(spot);
+
           return (
             <Polygon
               key={spot.attributes.OBJECTID}
@@ -352,6 +358,16 @@ export default function ExploreScreen() {
         })}
       </MapView>
 
+      <Pressable
+        style={[styles.homeButton, { top: insets.top + 20 }]}
+        onPress={() => {
+          mapRef.current?.animateToRegion(initialMapRegion, 1000);
+        }}
+      >
+        <Text style={styles.homeButtonText}>🏠</Text>
+      </Pressable>
+      
+      {/* The Permission Denied Banner */}
       {permissionStatus === 'denied' && (
         <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>
           <Text style={styles.permissionText}>Location permission is needed to show your position.</Text>
@@ -364,18 +380,21 @@ export default function ExploreScreen() {
         </View>
       )}
 
+      {/* The Selected Spot Info Box */}
       {selectedSpot && (
         <View style={styles.infoBox}>
            <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
              <Text style={styles.closeButtonText}>✕</Text>
           </Pressable>
-          <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
+          <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>          
           {formatDescription(selectedSpot)}
+          
           {selectedSpot.attributes.Type === 'Faculty/Staff' && !selectedSpot.attributes.isConditional && (
              <Text style={styles.conditionalText}>
                 This lot is restricted to Faculty/Staff at all times.
              </Text>
           )}
+
           <Pressable onPress={openDirections} style={styles.directionsButton}>
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
@@ -509,5 +528,23 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     color: 'white',
     fontWeight: '600',
+  },
+  homeButton: {
+    position: 'absolute',
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  homeButtonText: {
+    fontSize: 20,
   },
 });

@@ -1,13 +1,16 @@
 import React from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useFilters } from '../context/FilterContext';
 
+// This is a generic checkbox for most options
 const Checkbox = ({ label, value, onValueChange }: { label: string; value: boolean; onValueChange: () => void }) => (
   <Pressable style={styles.checkboxContainer} onPress={onValueChange}>
-    <View style={[styles.checkbox, value && styles.checkboxChecked]}>
-      {value && <Text style={styles.checkmark}>✓</Text>}
+    <View style={styles.checkboxLabelContainer}>
+      <View style={[styles.checkbox, value && styles.checkboxChecked]}>
+        {value && <Text style={styles.checkmark}>✓</Text>}
+      </View>
+      <Text style={styles.label}>{label}</Text>
     </View>
-    <Text style={styles.label}>{label}</Text>
   </Pressable>
 );
 
@@ -38,11 +41,20 @@ export default function SettingsScreen() {
           value={filters.resident}
           onValueChange={() => toggleFilter('resident')}
         />
-        <Checkbox
-          label="Parking Decks"
-          value={filters.parkingDeck}
-          onValueChange={() => toggleFilter('parkingDeck')}
-        />
+
+        {/* --- This is the corrected custom row for Parking Decks --- */}
+        <View style={styles.checkboxContainer}>
+          <Pressable style={styles.checkboxLabelContainer} onPress={() => toggleFilter('parkingDeck')}>
+            <View style={[styles.checkbox, filters.parkingDeck && styles.checkboxChecked]}>
+              {filters.parkingDeck && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.label}>Parking Decks</Text>
+          </Pressable>
+          <Pressable onPress={() => Linking.openURL('https://www.jmu.edu/parking/index.shtml')}>
+            <Text style={styles.infoIcon}>ℹ️</Text>
+          </Pressable>
+        </View>
+        
         <Checkbox
           label="Faculty/Staff Parking"
           value={filters.facultyStaff}
@@ -58,6 +70,7 @@ export default function SettingsScreen() {
   );
 }
 
+// This is the complete and corrected style object
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -84,6 +97,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    justifyContent: 'space-between',
+  },
+  checkboxLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   checkbox: {
     width: 24,
@@ -105,5 +124,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
+  },
+  infoIcon: {
+    fontSize: 22,
+    color: '#007AFF',
   },
 });
