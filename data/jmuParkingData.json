@@ -54,6 +54,16 @@
     ]
   },
   {
+    "name": "C5 Lot",
+    "address": "352 Bluestone Dr, Harrisonburg, VA 22807",
+    "type": "Commuter",
+    "timing": "Commuter Student Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.87162647319097, 38.43354833772998], [-78.87072059779263, 38.434058047893316], [-78.8706392603889, 38.43398683860144], [-78.87154673063831, 38.43346838286807], [-78.87162647319097, 38.43354833772998]
+    ]
+  },
+  {
     "name": "C9 Lot",
     "address": "330 Bluestone Dr, Harrisonburg, VA 22807",
     "type": "Commuter",
