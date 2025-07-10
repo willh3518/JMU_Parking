@@ -1,14 +1,14 @@
-import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from 'react-native';
 import jmuParkingData from '../data/jmuParkingData.json';
 
@@ -67,6 +67,16 @@ export default function ListScreen() {
   const [error, setError] = useState<string | null>(null);
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useFocusEffect(
+    useCallback(() => {
+      // This function is for when the screen is focused.
+      return () => {
+        // This function runs when the screen is unfocused.
+        setSearchQuery('');
+      };
+    }, [])
+  );
 
   useEffect(() => {
     // Data fetching logic remains the same
@@ -139,9 +149,9 @@ export default function ListScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.attributes.OBJECTID.toString()}
         contentContainerStyle={styles.listContent}
-        // --- CHANGE 3: Add this prop for better performance ---
         windowSize={10}
       />
+
     </SafeAreaView>
   );
 }
