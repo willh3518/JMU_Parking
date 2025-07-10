@@ -1,3 +1,6 @@
+import area from '@turf/area';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { point, polygon as turfPolygon } from '@turf/helpers';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -50,34 +53,6 @@ type Suggestion = {
     lon: string;
 }
 
-// Helper functions
-function isPointInPolygon(
-  point: { latitude: number; longitude: number },
-  polygon: { latitude: number; longitude: number }[]
-): boolean {
-  let isInside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
-    const xi = polygon[i].latitude,
-      yi = polygon[i].longitude;
-    const xj = polygon[j].latitude,
-      yj = polygon[j].longitude;
-    const intersect =
-      yi > point.longitude !== yj > point.longitude &&
-      point.latitude < ((xj - xi) * (point.longitude - yi)) / (yj - yi) + xi;
-    if (intersect) {
-      isInside = !isInside;
-    }
-  }
-  return isInside;
-}
-
-function getPolygonArea(polygon: { latitude: number; longitude: number }[]): number {
-  let area = 0;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
-    area += polygon[i].longitude * polygon[j].latitude - polygon[j].longitude * polygon[i].latitude;
-  }
-  return Math.abs(area / 2);
-}
 
 const isCommuterParkingAvailable = (): boolean => {
   const now = new Date();
@@ -106,6 +81,7 @@ export default function ExploreScreen() {
     latitudeDelta: 0.04,
     longitudeDelta: 0.04,
   }
+  const [currentRegion, setCurrentRegion] = useState(initialMapRegion);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -226,32 +202,37 @@ export default function ExploreScreen() {
   
   const handleMapPress = (e: MapPressEvent) => {
     const tappedCoordinate = e.nativeEvent.coordinate;
+    const tappedPoint = point([tappedCoordinate.longitude, tappedCoordinate.latitude]);
 
+    // 1. Find all polygons that contain the tapped point using Turf.js
     const tappedPolygons = filteredParkingData.filter(spot => {
-      const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
-      return isPointInPolygon(tappedCoordinate, polygonCoords);
+      // Convert the spot's geometry to a Turf.js polygon
+      const spotPolygon = turfPolygon(spot.geometry.rings);
+      return booleanPointInPolygon(tappedPoint, spotPolygon);
     });
 
+    // If no polygons were tapped, clear the selection
     if (tappedPolygons.length === 0) {
       setSelectedSpot(null);
       return;
     }
 
+    // 2. If there's only one match, select it. Otherwise, find the smallest one.
     let smallestSpot = tappedPolygons[0];
     if (tappedPolygons.length > 1) {
-        let minArea = Infinity;
-        tappedPolygons.forEach(spot => {
-        const polygonCoords = spot.geometry.rings[0].map(p => ({ latitude: p[1], longitude: p[0] }));
-        const area = getPolygonArea(polygonCoords);
-        if (area < minArea) {
-            minArea = area;
-            smallestSpot = spot;
-        }
-        });
+      smallestSpot = tappedPolygons.reduce((a, b) => {
+        const areaA = area(turfPolygon(a.geometry.rings));
+        const areaB = area(turfPolygon(b.geometry.rings));
+        return areaA < areaB ? a : b;
+      });
     }
     
-    // Always select the determined smallest spot
-    setSelectedSpot(smallestSpot);
+    // 3. Toggle selection
+    if (selectedSpot?.attributes.OBJECTID === smallestSpot.attributes.OBJECTID) {
+      setSelectedSpot(null); // If it's already selected, deselect it
+    } else {
+      setSelectedSpot(smallestSpot); // Otherwise, select the new spot
+    }
   };
   
   const openDirections = () => {
@@ -337,6 +318,7 @@ export default function ExploreScreen() {
         initialRegion={initialMapRegion}
         showsUserLocation={true}
         onPress={handleMapPress}
+        onRegionChangeComplete={setCurrentRegion}
       >
         {filteredParkingData.map((spot: ParkingSpot) => {
           const coordinates = spot.geometry.rings[0].map(point => ({
