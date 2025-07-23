@@ -1,16 +1,18 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
+    ActivityIndicator,
+    FlatList,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
 } from 'react-native';
+import { LiveParkingInfo } from '../components/LiveParkingInfo';
 import jmuParkingData from '../data/jmuParkingData.json';
+import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
 // Type Definitions
 type ParkingSpot = {
@@ -37,8 +39,24 @@ type JmuParkingSpot = {
 };
 
 // --- CHANGE 1: Create a new, optimized component for a single list item ---
-const ParkingListItem = React.memo(({ item }: { item: ParkingSpot }) => {
+const ParkingListItem = React.memo(({
+  item,
+  getParkingForDeck,
+  isLiveParkingLoading,
+  liveParkingError,
+  refreshLiveParkingData
+}: {
+  item: ParkingSpot;
+  getParkingForDeck: (deckName: string) => any;
+  isLiveParkingLoading: boolean;
+  liveParkingError: string | null;
+  refreshLiveParkingData: () => void;
+}) => {
   const router = useRouter();
+
+  // Check if this is a parking deck that has live data
+  const isParkingDeck = item.attributes.Type === 'Parking Deck';
+  const liveData = isParkingDeck ? getParkingForDeck(item.attributes.ParkingName) : null;
 
   return (
     <View style={styles.listItem}>
@@ -58,6 +76,18 @@ const ParkingListItem = React.memo(({ item }: { item: ParkingSpot }) => {
       </View>
       <Text style={styles.itemType}>{item.attributes.Type}</Text>
       <Text style={styles.itemTiming}>{item.attributes.ChangeTimingGroup}</Text>
+
+      {/* Show live parking data for parking decks */}
+      {isParkingDeck && (
+        <LiveParkingInfo
+          deckName={item.attributes.ParkingName}
+          liveData={liveData}
+          isLoading={isLiveParkingLoading}
+          error={liveParkingError}
+          onRefresh={refreshLiveParkingData}
+          compact={true}
+        />
+      )}
     </View>
   );
 });
@@ -67,6 +97,16 @@ export default function ListScreen() {
   const [error, setError] = useState<string | null>(null);
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add live parking data hook
+  const {
+    parkingData: liveParkingData,
+    isLoading: isLiveParkingLoading,
+    error: liveParkingError,
+    refreshData: refreshLiveParkingData,
+    getParkingForDeck
+  } = useLiveParkingData();
+
 
   useFocusEffect(
     useCallback(() => {
@@ -88,7 +128,7 @@ export default function ListScreen() {
           ...spot,
           attributes: { ...spot.attributes, Type: 'Downtown' },
         }));
-        
+
         const jmuParkingSpots = (jmuParkingData as JmuParkingSpot[]).map((spot: JmuParkingSpot, index: number): ParkingSpot => ({
           attributes: {
             OBJECTID: -1 - index,
@@ -120,8 +160,16 @@ export default function ListScreen() {
     );
   }, [searchQuery, allParkingData]);
 
-  // --- CHANGE 2: The renderItem function is now simpler ---
-  const renderItem = ({ item }: { item: ParkingSpot }) => <ParkingListItem item={item} />;
+  // --- CHANGE 2: The renderItem function now passes live parking data ---
+  const renderItem = ({ item }: { item: ParkingSpot }) => (
+    <ParkingListItem
+      item={item}
+      getParkingForDeck={getParkingForDeck}
+      isLiveParkingLoading={isLiveParkingLoading}
+      liveParkingError={liveParkingError}
+      refreshLiveParkingData={refreshLiveParkingData}
+    />
+  );
 
   if (isLoading) {
     return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
@@ -229,12 +277,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 12,
   },
-  center: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  errorText: { 
-    color: 'red' 
+  errorText: {
+    color: 'red'
   },
 });

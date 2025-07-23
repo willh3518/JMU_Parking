@@ -5,22 +5,24 @@ import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  AppState,
-  AppStateStatus,
-  Linking,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View
+    ActivityIndicator,
+    Alert,
+    AppState,
+    AppStateStatus,
+    Linking,
+    Platform,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    View
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LiveParkingInfo } from '../components/LiveParkingInfo';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
+import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
 // Type Definitions
 type ParkingSpot = {
@@ -69,6 +71,15 @@ export default function ExploreScreen() {
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const { filters } = useFilters();
+
+  // Add live parking data hook
+  const {
+    parkingData: liveParkingData,
+    isLoading: isLiveParkingLoading,
+    error: liveParkingError,
+    refreshData: refreshLiveParkingData,
+    getParkingForDeck
+  } = useLiveParkingData();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [permissionStatus, setPermissionStatus] = useState<Location.PermissionStatus | null>(null);
   const insets = useSafeAreaInsets();
@@ -87,9 +98,9 @@ export default function ExploreScreen() {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-  
+
   // --- FIX: Separated the nested useEffect hooks ---
-  
+
   // This useEffect listens for when the user returns to the app
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
@@ -109,19 +120,19 @@ export default function ExploreScreen() {
     if (selectedLotId && allParkingData.length > 0) {
       const targetId = Number(selectedLotId);
       const spotToFocus = allParkingData.find(spot => spot.attributes.OBJECTID === targetId);
-      
+
       if (spotToFocus) {
         const centroid = getPolygonCentroid(spotToFocus.geometry.rings);
-        
+
         mapRef.current?.animateToRegion({
           ...centroid,
           latitudeDelta: 0.003,
           longitudeDelta: 0.003,
-        }, 1000); 
+        }, 1000);
 
         // Just select the spot. This will now be the single source of truth.
         setSelectedSpot(spotToFocus);
-        
+
         router.setParams({ selectedLotId: undefined });
       }
     }
@@ -183,11 +194,11 @@ export default function ExploreScreen() {
       if (type === 'Parking Deck' && filters.parkingDeck) return true;
       if (type === 'Downtown' && filters.downtown) return true;
       if (type === 'Faculty/Staff' && (filters.facultyStaff || (isAvailableNow && spot.attributes.isConditional && filters.commuter))) return true;
-      
+
       return false;
     });
   }, [filters, allParkingData, currentTime, selectedSpot]); // Add selectedSpot to dependencies
-  
+
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
     const centroid = allPoints.reduce(
@@ -199,7 +210,7 @@ export default function ExploreScreen() {
     );
     return centroid;
   };
-  
+
   const handleMapPress = (e: MapPressEvent) => {
     const tappedCoordinate = e.nativeEvent.coordinate;
     const tappedPoint = point([tappedCoordinate.longitude, tappedCoordinate.latitude]);
@@ -226,7 +237,7 @@ export default function ExploreScreen() {
         return areaA < areaB ? a : b;
       });
     }
-    
+
     // 3. Toggle selection
     if (selectedSpot?.attributes.OBJECTID === smallestSpot.attributes.OBJECTID) {
       setSelectedSpot(null); // If it's already selected, deselect it
@@ -234,7 +245,7 @@ export default function ExploreScreen() {
       setSelectedSpot(smallestSpot); // Otherwise, select the new spot
     }
   };
-  
+
   const openDirections = () => {
     if (!selectedSpot) return;
     const centroid = getPolygonCentroid(selectedSpot.geometry.rings);
@@ -261,27 +272,27 @@ export default function ExploreScreen() {
     if (spot.attributes.isConditional && isAvailableNow) {
       type = 'Commuter';
     }
-    let fillColor = 'rgba(128, 128, 128, 0.4)'; 
+    let fillColor = 'rgba(128, 128, 128, 0.4)';
     let strokeColor = '#808080';
     if (type === 'Commuter') {
-      fillColor = 'rgba(0, 0, 139, 0.4)'; 
-      strokeColor = '#8A2BE2'; 
+      fillColor = 'rgba(0, 0, 139, 0.4)';
+      strokeColor = '#8A2BE2';
     } else if (type === 'Resident') {
       fillColor = 'rgba(173, 216, 230, 0.5)';
       strokeColor = '#8A2BE2';
     } else if (type === 'Parking Deck') {
-      fillColor = 'rgba(138, 43, 226, 0.4)'; 
+      fillColor = 'rgba(138, 43, 226, 0.4)';
       strokeColor = '#8A2BE2';
     } else if (type === 'Faculty/Staff') {
-        fillColor = 'rgba(255, 0, 0, 0.3)'; 
-        strokeColor = '#8A2BE2'; 
+        fillColor = 'rgba(255, 0, 0, 0.3)';
+        strokeColor = '#8A2BE2';
     } else if (type === 'Downtown') {
-      fillColor = 'rgba(60, 179, 113, 0.5)'; 
-      strokeColor = '#3CB371'; 
+      fillColor = 'rgba(60, 179, 113, 0.5)';
+      strokeColor = '#3CB371';
     }
     if (selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID) {
-      fillColor = 'rgba(255, 215, 0, 0.6)'; 
-      strokeColor = '#FFD700'; 
+      fillColor = 'rgba(255, 215, 0, 0.6)';
+      strokeColor = '#FFD700';
     }
     return { fillColor, strokeColor };
   };
@@ -348,13 +359,13 @@ export default function ExploreScreen() {
       >
         <Text style={styles.homeButtonText}>🏠</Text>
       </Pressable>
-      
+
       {/* The Permission Denied Banner */}
       {permissionStatus === 'denied' && (
         <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>
           <Text style={styles.permissionText}>Location permission is needed to show your position.</Text>
-          <Pressable 
-            style={styles.permissionButton} 
+          <Pressable
+            style={styles.permissionButton}
             onPress={() => Linking.openSettings()}
           >
             <Text style={styles.permissionButtonText}>Enable Location in Settings</Text>
@@ -368,9 +379,24 @@ export default function ExploreScreen() {
            <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
              <Text style={styles.closeButtonText}>✕</Text>
           </Pressable>
-          <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>          
+          <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
+
+          {/* Show live parking data for parking decks */}
+          {selectedSpot.attributes.Type === 'Parking Deck' && (
+            <View style={styles.liveParkingContainer}>
+              <LiveParkingInfo
+                deckName={selectedSpot.attributes.ParkingName}
+                liveData={getParkingForDeck(selectedSpot.attributes.ParkingName)}
+                isLoading={isLiveParkingLoading}
+                error={liveParkingError}
+                onRefresh={refreshLiveParkingData}
+                compact={true}
+              />
+            </View>
+          )}
+
           {formatDescription(selectedSpot)}
-          
+
           {selectedSpot.attributes.Type === 'Faculty/Staff' && !selectedSpot.attributes.isConditional && (
              <Text style={styles.conditionalText}>
                 This lot is restricted to Faculty/Staff at all times.
@@ -528,5 +554,14 @@ const styles = StyleSheet.create({
   },
   homeButtonText: {
     fontSize: 20,
+  },
+  liveParkingContainer: {
+    marginVertical: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
 });
