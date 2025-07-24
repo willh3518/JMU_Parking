@@ -24,11 +24,44 @@ export default function SettingsScreen() {
     }));
   };
 
+  const selectAll = () => {
+    setFilters({
+      commuter: true,
+      resident: true,
+      parkingDeck: true,
+      downtown: true,
+      facultyStaff: true,
+    });
+  };
+
+  const clearAll = () => {
+    setFilters({
+      commuter: false,
+      resident: false,
+      parkingDeck: false,
+      downtown: false,
+      facultyStaff: false,
+    });
+  };
+
+  const activeCount = Object.values(filters).filter(Boolean).length;
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Map Filters</Text>
-        <Text style={styles.subtitle}>Select which parking types to display on the map.</Text>
+        <Text style={styles.subtitle}>Select which parking types to display on the map and list.</Text>
+        <Text style={styles.activeCount}>{activeCount} of 5 types selected</Text>
+
+        {/* Control Buttons */}
+        <View style={styles.controlButtons}>
+          <Pressable style={styles.controlButton} onPress={selectAll}>
+            <Text style={styles.controlButtonText}>Select All</Text>
+          </Pressable>
+          <Pressable style={styles.controlButton} onPress={clearAll}>
+            <Text style={styles.controlButtonText}>Clear All</Text>
+          </Pressable>
+        </View>
       </View>
       <View style={styles.optionsContainer}>
         <Checkbox
@@ -128,5 +161,29 @@ const styles = StyleSheet.create({
   infoIcon: {
     fontSize: 22,
     color: '#007AFF',
+  },
+  activeCount: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  controlButtons: {
+    flexDirection: 'row',
+    marginTop: 15,
+    gap: 10,
+  },
+  controlButton: {
+    flex: 1,
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  controlButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

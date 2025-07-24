@@ -11,6 +11,7 @@ import {
     View
 } from 'react-native';
 import { LiveParkingInfo } from '../components/LiveParkingInfo';
+import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
@@ -92,11 +93,26 @@ const ParkingListItem = React.memo(({
   );
 });
 
+// Helper function to get active filters text
+const getActiveFiltersText = (filters: any) => {
+  const activeFilters = [];
+  if (filters.commuter) activeFilters.push('Commuter');
+  if (filters.resident) activeFilters.push('Resident');
+  if (filters.parkingDeck) activeFilters.push('Parking Decks');
+  if (filters.facultyStaff) activeFilters.push('Faculty/Staff');
+  if (filters.downtown) activeFilters.push('Downtown');
+
+  if (activeFilters.length === 0) return 'No parking types';
+  if (activeFilters.length === 5) return 'All parking types';
+  return activeFilters.join(', ');
+};
+
 export default function ListScreen() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const { filters } = useFilters();
 
   // Add live parking data hook
   const {
@@ -152,13 +168,35 @@ export default function ListScreen() {
   }, []);
 
   const filteredData = useMemo(() => {
+    // First apply type filters (same logic as map view)
+    const currentTime = new Date();
+    const day = currentTime.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const hour = currentTime.getHours();
+
+    // Helper function to check if Faculty/Staff lots are available to commuters
+    const isAvailableNow = (day === 0 || day === 6) || (day >= 1 && day <= 5 && hour >= 16);
+
+    let typeFilteredData = allParkingData.filter(spot => {
+      const type = spot.attributes.Type;
+
+      // Apply the same filtering logic as the map view
+      if (type === 'Commuter' && filters.commuter) return true;
+      if (type === 'Resident' && filters.resident) return true;
+      if (type === 'Parking Deck' && filters.parkingDeck) return true;
+      if (type === 'Downtown' && filters.downtown) return true;
+      if (type === 'Faculty/Staff' && (filters.facultyStaff || (isAvailableNow && spot.attributes.isConditional && filters.commuter))) return true;
+
+      return false;
+    });
+
+    // Then apply search filter
     if (!searchQuery) {
-      return allParkingData;
+      return typeFilteredData;
     }
-    return allParkingData.filter(spot =>
+    return typeFilteredData.filter(spot =>
       spot.attributes.ParkingName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery, allParkingData]);
+  }, [searchQuery, allParkingData, filters]);
 
   // --- CHANGE 2: The renderItem function now passes live parking data ---
   const renderItem = ({ item }: { item: ParkingSpot }) => (
@@ -190,6 +228,16 @@ export default function ListScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
+        </View>
+
+        {/* Filter Status Indicator */}
+        <View style={styles.filterStatus}>
+          <Text style={styles.filterStatusText}>
+            Showing: {getActiveFiltersText(filters)}
+          </Text>
+          <Text style={styles.filterHint}>
+            Adjust filters in Settings tab
+          </Text>
         </View>
       </View>
       <FlatList
@@ -284,5 +332,24 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red'
+  },
+  filterStatus: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#e8f4f8',
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginTop: 10,
+  },
+  filterStatusText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c5aa0',
+    marginBottom: 2,
+  },
+  filterHint: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
   },
 });
