@@ -1,0 +1,1727 @@
+[
+  {
+    "name": "Alumnae Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "ALUM",
+    "address": "395 South High Street",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Anthony-Seeger Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.869,
+      38.435900000000004
+    ],
+    "description": "Academic building",
+    "buildingCode": "ASH",
+    "address": "21 Alumnae Drive",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Arboretum",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Campus arboretum and botanical gardens",
+    "buildingCode": "ARB",
+    "address": "780 University Blvd",
+    "departments": [
+      "Biology",
+      "Environmental Science"
+    ]
+  },
+  {
+    "name": "Ashby Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.868,
+      38.438
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "ASHB",
+    "address": "1091 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Bell Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8685,
+      38.4375
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "BELL",
+    "address": "1051 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Bioscience Building",
+    "category": "Academic",
+    "coordinates": [
+      -78.8726,
+      38.4332
+    ],
+    "description": "Life sciences research and teaching",
+    "buildingCode": "BIO",
+    "address": "951 Carrier Drive",
+    "departments": [
+      "Biology",
+      "Biotechnology",
+      "Research Labs"
+    ]
+  },
+  {
+    "name": "Blue Ridge Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Suite-style residence hall",
+    "buildingCode": "BRH",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Bluestone Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.869,
+      38.437
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "BLUE",
+    "address": "1011 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Bridgeforth Stadium",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Football stadium and athletic complex",
+    "buildingCode": "BFS",
+    "departments": [
+      "Football",
+      "Athletics",
+      "Sports Medicine"
+    ]
+  },
+  {
+    "name": "Burruss Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8708,
+      38.4381
+    ],
+    "description": "Academic building",
+    "buildingCode": "BURR",
+    "address": "800 South Main Street",
+    "departments": [
+      "Psychology",
+      "Philosophy"
+    ]
+  },
+  {
+    "name": "Carrier Library",
+    "category": "Academic",
+    "coordinates": [
+      -78.8698,
+      38.436
+    ],
+    "description": "Main library and learning commons",
+    "buildingCode": "CARR",
+    "address": "1251 Carrier Drive",
+    "departments": [
+      "Library Services",
+      "Research Support",
+      "Study Spaces"
+    ]
+  },
+  {
+    "name": "Chandler Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8695,
+      38.4365
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "CHAN",
+    "address": "1131 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Chesapeake Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.87,
+      38.436
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "CHES",
+    "address": "1171 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Converse Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.869,
+      38.431000000000004
+    ],
+    "description": "Academic building",
+    "buildingCode": "CONV",
+    "address": "70 Alumnae Drive",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Convocation Center",
+    "category": "Recreation",
+    "coordinates": [
+      -78.875,
+      38.4308
+    ],
+    "description": "Basketball arena and events center",
+    "buildingCode": "CONVO",
+    "address": "1598 South Main Street",
+    "departments": [
+      "Athletics",
+      "Events"
+    ]
+  },
+  {
+    "name": "Dingledine Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8705,
+      38.4355
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "DING",
+    "address": "1211 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Duke Hall",
+    "category": "Arts",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Fine arts and studio spaces",
+    "buildingCode": "DH",
+    "departments": [
+      "Art",
+      "Studio Art",
+      "Galleries"
+    ]
+  },
+  {
+    "name": "Eagle Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.871,
+      38.435
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "EAGL",
+    "address": "1251 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "East Campus Dining Hall (E-Hall)",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "East campus all-you-care-to-eat dining",
+    "buildingCode": "EHALL",
+    "departments": [
+      "Dining Services"
+    ]
+  },
+  {
+    "name": "Festival Food Court",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Food court with multiple dining options",
+    "buildingCode": "FEST",
+    "departments": [
+      "Dining Services",
+      "Food Court"
+    ]
+  },
+  {
+    "name": "Frederikson Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8715,
+      38.4345
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "FRED",
+    "address": "1291 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Frye Building",
+    "category": "Student Services",
+    "coordinates": [
+      -78.8768,
+      38.429
+    ],
+    "description": "Administrative and support services",
+    "buildingCode": "FRYE",
+    "address": "1031 South Main Street",
+    "departments": [
+      "Facilities Management",
+      "Public Safety"
+    ]
+  },
+  {
+    "name": "Garber Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.872,
+      38.434
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "GARB",
+    "address": "1331 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Gifford Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8725,
+      38.4335
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "GIFF",
+    "address": "1371 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Godwin Hall",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8735,
+      38.4315
+    ],
+    "description": "Recreation and kinesiology building",
+    "buildingCode": "GH",
+    "departments": [
+      "Kinesiology",
+      "Recreation",
+      "Health Sciences"
+    ]
+  },
+  {
+    "name": "Godwin Hall Bus Shelter",
+    "category": "Support",
+    "coordinates": [
+      -78.8735,
+      38.4315
+    ],
+    "description": "Bus shelter at Godwin Hall",
+    "buildingCode": "GHBS",
+    "address": "201 Bluestone Drive",
+    "departments": [
+      "Transportation"
+    ]
+  },
+  {
+    "name": "Golf Turf Building",
+    "category": "Support",
+    "coordinates": [
+      -78.88,
+      38.425
+    ],
+    "description": "Golf course maintenance facility",
+    "buildingCode": "GTB",
+    "address": "",
+    "departments": [
+      "Golf Course Maintenance"
+    ]
+  },
+  {
+    "name": "Grace St. Parking Deck (7-levels)",
+    "category": "Parking",
+    "coordinates": [
+      -78.872,
+      38.434
+    ],
+    "description": "7-level parking deck",
+    "buildingCode": "GSPD",
+    "address": "258 E Grace Street",
+    "departments": [
+      "Parking Services"
+    ]
+  },
+  {
+    "name": "Grace Street Apartments Complex",
+    "category": "Residence",
+    "coordinates": [
+      -78.871,
+      38.4345
+    ],
+    "description": "Apartment complex",
+    "buildingCode": "GSAC",
+    "address": "42 West Grace Street",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Grace Street Modular",
+    "category": "Support",
+    "coordinates": [
+      -78.8715,
+      38.4342
+    ],
+    "description": "Modular building",
+    "buildingCode": "GSM",
+    "address": "81 West Grace Street",
+    "departments": [
+      "Support Services"
+    ]
+  },
+  {
+    "name": "Grafton-Stovall Theatre",
+    "category": "Arts",
+    "coordinates": [
+      -78.8725,
+      38.435
+    ],
+    "description": "Theatre and performance venue",
+    "buildingCode": "GST",
+    "address": "281 Warren Service Drive",
+    "departments": [
+      "Theatre",
+      "Performance"
+    ]
+  },
+  {
+    "name": "Greek Row",
+    "category": "Student Services",
+    "coordinates": [
+      -78.873,
+      38.4355
+    ],
+    "description": "Greek life housing area",
+    "buildingCode": "GreekRow",
+    "address": "1201 Greek Row",
+    "departments": [
+      "Greek Life",
+      "Student Organizations"
+    ]
+  },
+  {
+    "name": "Hanson Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.873,
+      38.433
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "HANS",
+    "address": "1411 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Harper Allen-Lee Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8765,
+      38.4295
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "HALH",
+    "address": "50 Bluestone Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Harrison Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "HH",
+    "departments": [
+      "Sociology",
+      "Anthropology"
+    ]
+  },
+  {
+    "name": "Hartman Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.877,
+      38.429
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "HART",
+    "address": "421 Bluestone Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Health and Behavioral Studies Building",
+    "category": "Academic",
+    "coordinates": [
+      -78.874,
+      38.432
+    ],
+    "description": "Health and behavioral studies",
+    "buildingCode": "HBS",
+    "address": "235 Martin Luther King Jr. Way",
+    "departments": [
+      "Health Sciences",
+      "Behavioral Studies"
+    ]
+  },
+  {
+    "name": "Hillcrest Annex",
+    "category": "Support",
+    "coordinates": [
+      -78.875,
+      38.431
+    ],
+    "description": "Support building annex",
+    "buildingCode": "HILX",
+    "address": "257 East Grace Street",
+    "departments": [
+      "Support Services"
+    ]
+  },
+  {
+    "name": "Hillcrest Hall",
+    "category": "Support",
+    "coordinates": [
+      -78.8755,
+      38.4305
+    ],
+    "description": "Support services building",
+    "buildingCode": "HILL",
+    "address": "251 Warren Service Drive",
+    "departments": [
+      "Support Services"
+    ]
+  },
+  {
+    "name": "Hillside Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.876,
+      38.43
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "HLSD",
+    "address": "290 Warren Service Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Hoffman Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8735,
+      38.4325
+    ],
+    "description": "Academic building",
+    "buildingCode": "HOF",
+    "departments": [
+      "Engineering",
+      "Technology"
+    ]
+  },
+  {
+    "name": "Holland Yates Hall (formerly Madison Hall)",
+    "category": "Academic",
+    "coordinates": [
+      -78.8765,
+      38.4295
+    ],
+    "description": "Academic building",
+    "buildingCode": "HYH",
+    "address": "100 East Grace Street",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Hotel Madison and Shenandoah Valley Conference Center",
+    "category": "Support",
+    "coordinates": [
+      -78.877,
+      38.429
+    ],
+    "description": "Official Hotel of JMU",
+    "buildingCode": "HTLMAD",
+    "address": "710 South Main Street",
+    "departments": [
+      "Conference Services",
+      "Hospitality"
+    ]
+  },
+  {
+    "name": "Huffman Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.874,
+      38.432
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "HUF",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Ice House",
+    "category": "Support",
+    "coordinates": [
+      -78.8775,
+      38.4285
+    ],
+    "description": "Ice storage and maintenance facility",
+    "buildingCode": "ICE",
+    "address": "127 West Bruce Street",
+    "departments": [
+      "Facilities Management",
+      "Ice Storage"
+    ]
+  },
+  {
+    "name": "Ikenberry Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.878,
+      38.428
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "IKEN",
+    "address": "210 Ikenberry Service Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "ISAT/CS Building",
+    "category": "Academic",
+    "coordinates": [
+      -78.8712,
+      38.4346
+    ],
+    "description": "Integrated Science and Technology / Computer Science",
+    "buildingCode": "ISAT",
+    "address": "701 Carrier Drive",
+    "departments": [
+      "ISAT",
+      "Computer Science",
+      "Applied Science",
+      "Technology"
+    ]
+  },
+  {
+    "name": "Jackson Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "JH",
+    "departments": [
+      "Mathematics",
+      "Statistics"
+    ]
+  },
+  {
+    "name": "Johnston Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "JOH",
+    "departments": [
+      "Art",
+      "Art History"
+    ]
+  },
+  {
+    "name": "Keezell Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "KH",
+    "departments": [
+      "Physics",
+      "Geology"
+    ]
+  },
+  {
+    "name": "Lakeview Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8745,
+      38.4315
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "LAKE",
+    "address": "1531 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Logan Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.875,
+      38.431
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "LOGA",
+    "address": "1571 Devon Lane",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Market One",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Campus market and convenience store",
+    "buildingCode": "M1",
+    "departments": [
+      "Dining Services",
+      "Grocery",
+      "Convenience"
+    ]
+  },
+  {
+    "name": "Maury Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "MY",
+    "departments": [
+      "History",
+      "Political Science"
+    ]
+  },
+  {
+    "name": "McGraw-Long Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "MGL",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Memorial Baseball Stadium",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8793,
+      38.425
+    ],
+    "description": "Baseball stadium",
+    "buildingCode": "MBS",
+    "address": "270 Veterans Memorial Drive",
+    "departments": [
+      "Baseball",
+      "Athletics"
+    ]
+  },
+  {
+    "name": "Memorial Concession Building",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8795,
+      38.425
+    ],
+    "description": "Concession building for athletics",
+    "buildingCode": "MCB",
+    "address": "250 Veterans Memorial Drive",
+    "departments": [
+      "Athletics",
+      "Concessions"
+    ]
+  },
+  {
+    "name": "Memorial Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8703,
+      38.4374
+    ],
+    "description": "Academic building",
+    "buildingCode": "MEMH",
+    "address": "395 South High Street",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Memorial Hall Arts Complex",
+    "category": "Arts",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Arts complex",
+    "buildingCode": "MHAC",
+    "address": "395 South High Street",
+    "departments": [
+      "Arts",
+      "Theatre",
+      "Performance"
+    ]
+  },
+  {
+    "name": "Memorial Hall Greenhouse",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Greenhouse facility",
+    "buildingCode": "MHGH",
+    "address": "395 South High Street",
+    "departments": [
+      "Biology",
+      "Horticulture"
+    ]
+  },
+  {
+    "name": "Memorial Hall Outfield Building",
+    "category": "Recreation",
+    "coordinates": [
+      -78.87979999999999,
+      38.425
+    ],
+    "description": "Athletic support building",
+    "buildingCode": "MHOB",
+    "address": "220 Veterans Memorial Drive",
+    "departments": [
+      "Athletics"
+    ]
+  },
+  {
+    "name": "Memorial Softball RR Building",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8796,
+      38.425
+    ],
+    "description": "Softball facility building",
+    "buildingCode": "MSRB",
+    "address": "240 Veterans Memorial Drive",
+    "departments": [
+      "Softball",
+      "Athletics"
+    ]
+  },
+  {
+    "name": "Miller Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8705,
+      38.4353
+    ],
+    "description": "Academic building",
+    "buildingCode": "MIL",
+    "departments": [
+      "Biology",
+      "Chemistry"
+    ]
+  },
+  {
+    "name": "Moody Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.876,
+      38.43
+    ],
+    "description": "Academic building",
+    "buildingCode": "MOO",
+    "departments": [
+      "Music",
+      "Theatre Arts"
+    ]
+  },
+  {
+    "name": "Motor Pool Alternative Fuel Building",
+    "category": "Support",
+    "coordinates": [
+      -78.8815,
+      38.4235
+    ],
+    "description": "Vehicle maintenance facility",
+    "buildingCode": "MPAF",
+    "address": "1595 South Main Street",
+    "departments": [
+      "Facilities Management",
+      "Transportation"
+    ]
+  },
+  {
+    "name": "Motor Pool Garage",
+    "category": "Support",
+    "coordinates": [
+      -78.881,
+      38.424
+    ],
+    "description": "Vehicle garage",
+    "buildingCode": "MPG",
+    "address": "1603 South Main Street",
+    "departments": [
+      "Facilities Management",
+      "Transportation"
+    ]
+  },
+  {
+    "name": "Mr. Chips Convenience Store",
+    "category": "Dining",
+    "coordinates": [
+      -78.875,
+      38.429
+    ],
+    "description": "Campus convenience store",
+    "buildingCode": "CS",
+    "address": "190 Bluestone Drive",
+    "departments": [
+      "Dining Services",
+      "Convenience"
+    ]
+  },
+  {
+    "name": "Music Building",
+    "category": "Arts",
+    "coordinates": [
+      -78.874,
+      38.4318
+    ],
+    "description": "Music practice rooms and performance spaces",
+    "buildingCode": "MUS",
+    "address": "880 South Main Street",
+    "departments": [
+      "Music",
+      "Band",
+      "Orchestra",
+      "Choir"
+    ]
+  },
+  {
+    "name": "Newman Drive Telecom Building",
+    "category": "Support",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Telecommunications facility",
+    "buildingCode": "NDT",
+    "address": "1016 Newman Drive",
+    "departments": [
+      "Information Technology",
+      "Telecommunications"
+    ]
+  },
+  {
+    "name": "Paul Jennings Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "PJH",
+    "address": "831 University Blvd",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "PC Dukes",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Sports bar and grill",
+    "buildingCode": "PCD",
+    "departments": [
+      "Dining Services",
+      "Sports Bar"
+    ]
+  },
+  {
+    "name": "Physics/Chemistry Building",
+    "category": "Academic",
+    "coordinates": [
+      -78.8733,
+      38.4325
+    ],
+    "description": "Physical sciences building",
+    "buildingCode": "PCB",
+    "address": "901 Carrier Drive",
+    "departments": [
+      "Physics",
+      "Chemistry",
+      "Science Labs"
+    ]
+  },
+  {
+    "name": "Plecker Athletic Performance Center",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8745,
+      38.4305
+    ],
+    "description": "Athletic training and performance facility",
+    "buildingCode": "PAPC",
+    "departments": [
+      "Athletic Training",
+      "Sports Performance",
+      "Strength Training"
+    ]
+  },
+  {
+    "name": "Power Plant",
+    "category": "Support",
+    "coordinates": [
+      -78.88,
+      38.425
+    ],
+    "description": "Campus power generation facility",
+    "buildingCode": "PWRP",
+    "address": "1010 Newman Drive",
+    "departments": [
+      "Facilities Management",
+      "Utilities"
+    ]
+  },
+  {
+    "name": "Roberts Center for Music Performance",
+    "category": "Arts",
+    "coordinates": [
+      -78.868,
+      38.472649999999994
+    ],
+    "description": "Music performance venue",
+    "buildingCode": "MRH",
+    "address": "147 Warsaw Avenue / 871 South Main Street",
+    "departments": [
+      "Music",
+      "Performance",
+      "Concerts"
+    ]
+  },
+  {
+    "name": "Rockingham Cooperative Grounds Building",
+    "category": "Support",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Cooperative extension facility",
+    "buildingCode": "RCGB",
+    "address": "573 Chesapeake Drive",
+    "departments": [
+      "Extension Services",
+      "Agriculture"
+    ]
+  },
+  {
+    "name": "Roop Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8765,
+      38.4295
+    ],
+    "description": "Academic building",
+    "buildingCode": "RH",
+    "departments": [
+      "Computer Science",
+      "Information Systems"
+    ]
+  },
+  {
+    "name": "Rose Library",
+    "category": "Academic",
+    "coordinates": [
+      -78.8705,
+      38.4353
+    ],
+    "description": "Science and technology library",
+    "buildingCode": "ROSE",
+    "address": "1251 Carrier Drive",
+    "departments": [
+      "Library Services",
+      "Science Collections",
+      "Technology Resources"
+    ]
+  },
+  {
+    "name": "Salt Storage Shed",
+    "category": "Support",
+    "coordinates": [
+      -78.868,
+      38.39955
+    ],
+    "description": "Maintenance storage facility",
+    "buildingCode": "1609",
+    "address": "1609 South Main Street",
+    "departments": [
+      "Facilities Management",
+      "Maintenance"
+    ]
+  },
+  {
+    "name": "Savage Natatorium",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Swimming and aquatic center",
+    "buildingCode": "SN",
+    "departments": [
+      "Swimming",
+      "Diving",
+      "Aquatic Programs"
+    ]
+  },
+  {
+    "name": "Sentara Park: Athletic Stadium",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Athletic stadium",
+    "buildingCode": "UPAS",
+    "address": "1085 Neff Avenue",
+    "departments": [
+      "Athletics",
+      "Baseball"
+    ]
+  },
+  {
+    "name": "Sentara Park: Athletics Gatehouse",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Athletic facility gatehouse",
+    "buildingCode": "UPAG",
+    "address": "1855 Performance Drive",
+    "departments": [
+      "Athletics",
+      "Security"
+    ]
+  },
+  {
+    "name": "Sentara Park: Athletics Pavilion",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Athletic pavilion",
+    "buildingCode": "UPAP",
+    "address": "1045 Neff Avenue",
+    "departments": [
+      "Athletics",
+      "Events"
+    ]
+  },
+  {
+    "name": "Sheldon Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.869,
+      38.4309
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "SHEL",
+    "address": "71 Alumnae Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Shenandoah Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Suite-style residence hall",
+    "buildingCode": "SHE",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Shorts Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.877,
+      38.429
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "SHOR",
+    "address": "441 Bluestone Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Showker Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8715,
+      38.434
+    ],
+    "description": "Business building",
+    "buildingCode": "SH",
+    "departments": [
+      "College of Business",
+      "Economics",
+      "Finance"
+    ]
+  },
+  {
+    "name": "Small Wind Training and Testing Facility",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Wind energy research facility",
+    "buildingCode": "WTF",
+    "address": "TBD",
+    "departments": [
+      "Engineering",
+      "Renewable Energy",
+      "Research"
+    ]
+  },
+  {
+    "name": "Solar Panel Control Building",
+    "category": "Support",
+    "coordinates": [
+      -78.87598,
+      38.435
+    ],
+    "description": "Solar energy control facility",
+    "buildingCode": "SPCB",
+    "address": "601 Carrier Drive",
+    "departments": [
+      "Facilities Management",
+      "Renewable Energy"
+    ]
+  },
+  {
+    "name": "Sonner Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.875,
+      38.3999
+    ],
+    "description": "Academic building",
+    "buildingCode": "SONH",
+    "address": "481 Bluestone Drive",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "South Main Dining Services Warehouse",
+    "category": "Support",
+    "coordinates": [
+      -78.868,
+      38.400349999999996
+    ],
+    "description": "Dining services warehouse",
+    "buildingCode": "DSWH",
+    "address": "1593 South Main Street",
+    "departments": [
+      "Dining Services",
+      "Storage"
+    ]
+  },
+  {
+    "name": "South Main Storage Building #1 and #2 (Recycling)",
+    "category": "Support",
+    "coordinates": [
+      -78.868,
+      38.40015
+    ],
+    "description": "Storage and recycling facility",
+    "buildingCode": "SB1",
+    "address": "1597 South Main Street",
+    "departments": [
+      "Facilities Management",
+      "Recycling"
+    ]
+  },
+  {
+    "name": "Spotswood Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "SPO",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Starbucks (Student Union)",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Coffee shop in student union",
+    "buildingCode": "SB",
+    "departments": [
+      "Dining Services",
+      "Coffee"
+    ]
+  },
+  {
+    "name": "Student Success Center",
+    "category": "Student Services",
+    "coordinates": [
+      -78.871,
+      38.4355
+    ],
+    "description": "Academic support and student success services",
+    "buildingCode": "SSC",
+    "departments": [
+      "Academic Advising",
+      "Tutoring",
+      "Learning Support"
+    ]
+  },
+  {
+    "name": "Studio Center",
+    "category": "Arts",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Art studios and creative spaces",
+    "buildingCode": "SC",
+    "address": "106 West Grace Street",
+    "departments": [
+      "Art",
+      "Studio Arts",
+      "Creative Arts"
+    ]
+  },
+  {
+    "name": "Taylor Hall (The Union)",
+    "category": "Student Services",
+    "coordinates": [
+      -78.8725,
+      38.4345
+    ],
+    "description": "Student union and services",
+    "buildingCode": "TAYL",
+    "address": "285 Warren Service Drive",
+    "departments": [
+      "Student Life",
+      "Student Organizations",
+      "Events"
+    ]
+  },
+  {
+    "name": "Top Dog Cafe",
+    "category": "Dining",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Campus cafe and convenience store",
+    "buildingCode": "TDC",
+    "departments": [
+      "Dining Services",
+      "Convenience Store"
+    ]
+  },
+  {
+    "name": "University Farm House and Pavilion",
+    "category": "Academic",
+    "coordinates": [
+      -78.869,
+      37.598200000000006
+    ],
+    "description": "Agricultural education facility",
+    "buildingCode": "UFH",
+    "address": "8398 Alumnae Drive Port Republic",
+    "departments": [
+      "Agriculture",
+      "Farm Operations",
+      "Education"
+    ]
+  },
+  {
+    "name": "University Health Center",
+    "category": "Student Services",
+    "coordinates": [
+      -78.873,
+      38.434
+    ],
+    "description": "Student health and medical services",
+    "buildingCode": "HCTR",
+    "address": "724 South Mason Street",
+    "departments": [
+      "Health Services",
+      "Medical Care",
+      "Counseling"
+    ]
+  },
+  {
+    "name": "University Recreation Center (UREC)",
+    "category": "Recreation",
+    "coordinates": [
+      -78.874,
+      38.4318
+    ],
+    "description": "Main recreation and fitness center",
+    "buildingCode": "UREC",
+    "departments": [
+      "Fitness Center",
+      "Intramural Sports",
+      "Recreation Programs"
+    ]
+  },
+  {
+    "name": "University Recreation: University Park Gatehouse",
+    "category": "Recreation",
+    "coordinates": [
+      -78.87,
+      38.4355
+    ],
+    "description": "Recreation facility gatehouse",
+    "buildingCode": "UPUG",
+    "address": "1090 Devon Lane",
+    "departments": [
+      "Recreation",
+      "Athletics",
+      "Security"
+    ]
+  },
+  {
+    "name": "University Recreation: University Park Pavilion",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Recreation pavilion",
+    "buildingCode": "UPUP",
+    "address": "1875 Performance Drive",
+    "departments": [
+      "Recreation",
+      "Athletics",
+      "Events"
+    ]
+  },
+  {
+    "name": "University Services Building",
+    "category": "Support",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Administrative and support services",
+    "buildingCode": "USB",
+    "address": "181 Patterson",
+    "departments": [
+      "Administrative Services",
+      "Support Operations"
+    ]
+  },
+  {
+    "name": "University Turf Building",
+    "category": "Support",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Turf maintenance facility",
+    "buildingCode": "UTB",
+    "address": "University Blvd",
+    "departments": [
+      "Facilities Management",
+      "Grounds Keeping"
+    ]
+  },
+  {
+    "name": "Varner House",
+    "category": "Academic",
+    "coordinates": [
+      -78.8775,
+      38.4285
+    ],
+    "description": "Academic building",
+    "buildingCode": "VARN",
+    "address": "80 Bluestone Drive",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Veterans Memorial Park",
+    "category": "Recreation",
+    "coordinates": [
+      -78.8797,
+      38.425
+    ],
+    "description": "Memorial park and recreation area",
+    "buildingCode": "Veterans",
+    "address": "230 Veterans Memorial Drive",
+    "departments": [
+      "Recreation",
+      "Memorial Services"
+    ]
+  },
+  {
+    "name": "Veterans Memorial Park (Baseball and Softball RR Buildings)",
+    "category": "Recreation",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Baseball and softball facilities",
+    "buildingCode": "MSS",
+    "address": "TBD",
+    "departments": [
+      "Baseball",
+      "Softball",
+      "Athletics"
+    ]
+  },
+  {
+    "name": "Wampler Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.878,
+      38.428
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "WAMP",
+    "address": "10 Bluestone Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Warren Hall",
+    "category": "Student Services",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Student services and administration",
+    "buildingCode": "WH",
+    "departments": [
+      "Registrar",
+      "Financial Aid",
+      "Student Accounts"
+    ]
+  },
+  {
+    "name": "Warren Hall (The Union)",
+    "category": "Student Services",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Student union building",
+    "buildingCode": "WARR",
+    "address": "170 Bluestone Drive",
+    "departments": [
+      "Student Life",
+      "Dining",
+      "Student Organizations"
+    ]
+  },
+  {
+    "name": "Warsaw Ave. Parking Deck (5-Level)",
+    "category": "Parking",
+    "coordinates": [
+      -78.8695,
+      38.4365
+    ],
+    "description": "Multi-level parking deck",
+    "buildingCode": "WAPD",
+    "address": "157 Warsaw Avenue",
+    "departments": [
+      "Parking Services",
+      "Transportation"
+    ]
+  },
+  {
+    "name": "Wayland Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.8785,
+      38.4275
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "WAYL",
+    "address": "51 Bluestone Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Weaver Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.88,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "WEAV",
+    "address": "400 Carrier Drive",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "White Hall",
+    "category": "Residence",
+    "coordinates": [
+      -78.879,
+      38.427
+    ],
+    "description": "Traditional residence hall",
+    "buildingCode": "WHIT",
+    "address": "480 Carrier Drive",
+    "departments": [
+      "Residence Life"
+    ]
+  },
+  {
+    "name": "Wilson Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8691,
+      38.4367
+    ],
+    "description": "Main administration building",
+    "buildingCode": "WILS",
+    "address": "951 Madison Drive",
+    "departments": [
+      "Administration",
+      "President's Office",
+      "Provost"
+    ]
+  },
+  {
+    "name": "Wine-Price Building",
+    "category": "Academic",
+    "coordinates": [
+      -78.872,
+      38.435
+    ],
+    "description": "Academic building",
+    "buildingCode": "WP",
+    "address": "752 Ott Street",
+    "departments": [
+      "Academic Programs"
+    ]
+  },
+  {
+    "name": "Zane Showker Hall",
+    "category": "Academic",
+    "coordinates": [
+      -78.8715,
+      38.434
+    ],
+    "description": "Business building",
+    "buildingCode": "ZSH",
+    "departments": [
+      "Management",
+      "Marketing",
+      "Accounting"
+    ]
+  }
+]
