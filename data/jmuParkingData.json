@@ -253,7 +253,7 @@
     ]
   },
   {
-    "name": "R17 & R19 Lot",
+    "name": "R17 & R18 Lot",
     "address": "1170 Harrison St, Harrisonburg, VA 22801",
     "type": "Resident",
     "timing": "Resident Student Lot (Open to Commuters 24/7)",
@@ -541,6 +541,96 @@
     "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
     "polygon": [
       [-78.87860441194577, 38.44615770353233], [-78.87841129289292, 38.44635936917938], [-78.87871438251754, 38.44651481939771], [-78.87890481936131, 38.44630370111436], [-78.87860441194577, 38.44615770353233]
+    ]
+  },
+  {
+    "name": "R7 Lot",
+    "address": "R7, 370 Carrier Dr, Harrisonburg, VA 22801",
+    "type": "Faculty/Staff",
+    "timing": "Metered Parking Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8687128, 38.4351657], [-78.8685535, 38.4351004], [-78.8685962, 38.4350068], [-78.8680471, 38.4351798], [-78.8679741, 38.4350290], [-78.8685848, 38.4348188], [-78.8686673, 38.4349837], [-78.8687706, 38.4350588], [-78.8687204, 38.4351286], [-78.8687128, 38.4351657]
+    ]
+  },
+  {
+    "name": "220 University Boulevard",
+    "address": "220 University Boulevard",
+    "type": "Commuter",
+    "timing": "Commuter Student Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8492541, 38.4295925], [-78.8494917, 38.4295626], [-78.8493386, 38.4289604], [-78.8493163, 38.4289729], [-78.8494056, 38.4293352], [-78.8491935, 38.4293627], [-78.8492541, 38.4295925]
+    ]
+  },
+  {
+    "name": "380 University Blvd",
+    "address": "380 University Blvd",
+    "type": "Commuter",
+    "timing": "Commuter Student Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8525338, 38.4292350], [-78.8531335, 38.4291451], [-78.8530123, 38.4283680], [-78.8523456, 38.4284180], [-78.8523935, 38.4286353], [-78.8527762, 38.4285454], [-78.8528592, 38.4290426], [-78.8524509, 38.4290751], [-78.8525338, 38.4292350]
+    ]
+  },
+  {
+    "name": "755 Martin Luther King Jr Way",
+    "address": "755 Martin Luther King Jr Way",
+    "type": "Faculty/Staff",
+    "timing": "Faculty and Staff Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8577487, 38.4405741], [-78.8591155, 38.4396307], [-78.8589937, 38.4395247], [-78.8583080, 38.4398639], [-78.8581592, 38.4397579], [-78.8573517, 38.4399911],[-78.8577487, 38.4405741]
+    ]
+  },
+  {
+    "name": "WMRA Parking Lot",
+    "address": "983 Reservoir St",
+    "type": "Commuter",
+    "timing": "Commuter Student Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8586487, 38.4403366], [-78.8581703, 38.4407064], [-78.8584829, 38.4409887],  [-78.8587125, 38.4408713], [-78.8585499, 38.4407239], [-78.8588433, 38.4404815], [-78.8586487, 38.4403366]
+    ]
+  },
+  {
+    "name": "Ice House Parking Lot",
+    "address": "164 W Bruce St, Harrisonburg, VA 22801",
+    "type": "Commuter",
+    "timing": "Commuter Student Lot",
+    "isConditional": false,
+    "polygon": [
+      [-78.8719857, 38.4486493], [-78.8721923, 38.4479120], [-78.8730023, 38.4480170], [-78.8728950, 38.4484519], [-78.8723773, 38.4483615], [-78.8722701, 38.4488258], [-78.8719857, 38.4486493]
+    ]
+  },
+  {
+    "name": "Mason Street Parking Deck (Levels 3-5)",
+    "address": "715 S Mason St",
+    "type": "Faculty/Staff",
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
+    "isConditional": true,
+    "polygon": [
+      [-78.8718724, 38.4407296], [-78.8712200, 38.4412941], [-78.8721552, 38.4419109], [-78.8728076, 38.4413509], [-78.8718724, 38.4407296]
+    ]
+  },
+  {
+    "name": "Cantrell Ave Deck (Levels 2-3)",
+    "address": "275 Martin Luther King Jr Way",
+    "type": "Faculty/Staff",
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
+    "isConditional": true,
+    "polygon": [
+      [-78.8701346, 38.4396471], [-78.8697129, 38.4399775], [-78.8692505, 38.4396312], [-78.8696813, 38.4392761], [-78.8701346, 38.4396471]
+    ]
+  },
+  {
+    "name": "B Lot",
+    "address": "810 Madison Drive",
+    "type": "Faculty/Staff",
+    "timing": "Faculty and Staff Lot \nAvailable to Commuters after 4pm (M-F) & all day (Sat-Sun)",
+    "isConditional": true,
+    "polygon": [
+      [-78.8715584, 38.4395302], [-78.8722028, 38.4399699], [-78.8723136, 38.4398574], [-78.8716844, 38.4394346], [-78.8715584, 38.4395302]
     ]
   }
 ]

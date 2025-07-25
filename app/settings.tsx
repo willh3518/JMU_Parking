@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useFilters } from '../context/FilterContext';
 
 // This is a generic checkbox for most options
@@ -74,20 +74,11 @@ export default function SettingsScreen() {
           value={filters.resident}
           onValueChange={() => toggleFilter('resident')}
         />
-
-        {/* --- This is the corrected custom row for Parking Decks --- */}
-        <View style={styles.checkboxContainer}>
-          <Pressable style={styles.checkboxLabelContainer} onPress={() => toggleFilter('parkingDeck')}>
-            <View style={[styles.checkbox, filters.parkingDeck && styles.checkboxChecked]}>
-              {filters.parkingDeck && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.label}>Parking Decks</Text>
-          </Pressable>
-          <Pressable onPress={() => Linking.openURL('https://www.jmu.edu/parking/index.shtml')}>
-            <Text style={styles.infoIcon}>ℹ️</Text>
-          </Pressable>
-        </View>
-        
+        <Checkbox
+          label="Parking Decks"
+          value={filters.parkingDeck}
+          onValueChange={() => toggleFilter('parkingDeck')}
+        />
         <Checkbox
           label="Faculty/Staff Parking"
           value={filters.facultyStaff}

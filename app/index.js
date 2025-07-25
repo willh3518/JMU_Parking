@@ -1,15 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useFilters } from '../context/FilterContext';
 import jmuBuildings from '../data/jmuBuildings.json';
@@ -82,7 +82,7 @@ export default function MainScreen() {
     const recommendations = [];
 
     // Process each parking spot
-    jmuParkingData.forEach((spot: any) => {
+    jmuParkingData.forEach((spot) => {
       // Check if this parking type is allowed by current filter settings
       if (!isParkingTypeAllowed(spot.type, spot.isConditional)) {
         return; // Skip this parking spot if it's filtered out
@@ -90,8 +90,8 @@ export default function MainScreen() {
 
       // Calculate center of polygon for distance calculation
       const coords = spot.polygon;
-      const centerLat = coords.reduce((sum: number, coord: number[]) => sum + coord[1], 0) / coords.length;
-      const centerLon = coords.reduce((sum: number, coord: number[]) => sum + coord[0], 0) / coords.length;
+      const centerLat = coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length;
+const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.length;
 
       const distance = calculateDistance(building.coordinates, [centerLon, centerLat]);
 
