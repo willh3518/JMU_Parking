@@ -1,4 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -11,8 +12,10 @@ import {
     View
 } from 'react-native';
 import { LiveParkingInfo } from '../components/LiveParkingInfo';
+import { Colors } from '../constants/Colors';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
+import { useColorScheme } from '../hooks/useColorScheme';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
 // Type Definitions
@@ -40,7 +43,7 @@ type JmuParkingSpot = {
 };
 
 // --- CHANGE 1: Create a new, optimized component for a single list item ---
-const ParkingListItem = React.memo(({
+const ParkingListItem = React.memo(({ 
   item,
   getParkingForDeck,
   isLiveParkingLoading,
@@ -54,6 +57,8 @@ const ParkingListItem = React.memo(({
   refreshLiveParkingData: () => void;
 }) => {
   const router = useRouter();
+  const theme = (useColorScheme() ?? 'light');
+  const themeColors = Colors[theme];
 
   // Check if this is a parking deck that has live data
   const isParkingDeck = item.attributes.Type === 'Parking Deck';
@@ -64,7 +69,7 @@ const ParkingListItem = React.memo(({
       <View style={styles.itemHeader}>
         <Text style={styles.itemName}>{item.attributes.ParkingName}</Text>
         <Pressable
-          style={styles.mapButton}
+          style={[styles.mapButton, { backgroundColor: 'rgba(69,0,132,0.08)' }]}
           onPress={() => {
             router.push({
               pathname: '/explore',
@@ -72,10 +77,10 @@ const ParkingListItem = React.memo(({
             });
           }}
         >
-          <Text style={styles.mapButtonText}>See on map</Text>
+          <Text style={[styles.mapButtonText, { color: themeColors.tint }]}>See on map</Text>
         </Pressable>
       </View>
-      <Text style={styles.itemType}>{item.attributes.Type}</Text>
+      <Text style={[styles.itemType, { color: themeColors.tint }]}>{item.attributes.Type}</Text>
       <Text style={styles.itemTiming}>{item.attributes.ChangeTimingGroup}</Text>
 
       {/* Show live parking data for parking decks */}
@@ -113,6 +118,8 @@ export default function ListScreen() {
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const { filters } = useFilters();
+  const theme = useColorScheme() ?? 'light';
+  const themeColors = Colors[theme];
 
   // Add live parking data hook
   const {
@@ -218,7 +225,12 @@ export default function ListScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#450084' }]}>
+      <StatusBar style="light" />
+      <View style={styles.headerBandFull}>
+        <Text style={styles.headerTitle}>Parking Directory</Text>
+        <Text style={styles.headerSubtitle}>Browse all lots and decks</Text>
+      </View>
       <View style={styles.header}>
         <Text style={styles.title}>Parking Directory</Text>
         <View style={styles.searchContainer}>
@@ -231,8 +243,8 @@ export default function ListScreen() {
         </View>
 
         {/* Filter Status Indicator */}
-        <View style={styles.filterStatus}>
-          <Text style={styles.filterStatusText}>
+        <View style={[styles.filterStatus, { backgroundColor: 'rgba(69,0,132,0.06)' }]}>
+          <Text style={[styles.filterStatusText, { color: themeColors.tint }]}>
             Showing: {getActiveFiltersText(filters)}
           </Text>
           <Text style={styles.filterHint}>
@@ -256,6 +268,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  headerBandFull: {
+    backgroundColor: '#450084',
+    paddingTop: 12,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 2,
   },
   header: {
     backgroundColor: 'white',
@@ -305,7 +335,6 @@ const styles = StyleSheet.create({
   },
   itemType: {
     fontSize: 14,
-    color: '#007AFF',
     fontWeight: '500',
     marginTop: 4,
   },
@@ -315,13 +344,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   mapButton: {
-    backgroundColor: '#eef',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
   },
   mapButtonText: {
-    color: '#007AFF',
     fontWeight: '600',
     fontSize: 12,
   },

@@ -1,19 +1,22 @@
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { Colors } from '../constants/Colors';
 import { useFilters } from '../context/FilterContext';
 import jmuBuildings from '../data/jmuBuildings.json';
 import jmuParkingData from '../data/jmuParkingData.json';
+import { useColorScheme } from '../hooks/useColorScheme';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
 // Type definitions (removed for JavaScript compatibility)
@@ -37,6 +40,8 @@ export default function MainScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const theme = useColorScheme() ?? 'light';
+  const themeColors = Colors[theme];
 
   // Get live parking data and filters
   const { parkingData: liveParkingData, isLoading: isLiveParkingLoading } = useLiveParkingData();
@@ -176,11 +181,13 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
   };
 
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <SafeAreaView style={[styles.wrapper, { backgroundColor: '#450084' }]}>      
+      <StatusBar style="light" />
+      <View style={styles.headerBandFull}>
+        <Text style={styles.headerTitle}>Find Parking</Text>
+        <Text style={styles.headerSubtitle}>Where are you going on campus?</Text>
+      </View>
       <View style={styles.container}>
-        <Text style={styles.title}>Find Parking</Text>
-        <Text style={styles.subtitle}>Where are you going on campus?</Text>
-
         {/* Search Input */}
         <View style={styles.searchContainer}>
           <TextInput
@@ -207,7 +214,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
               style={styles.settingsLink}
               onPress={() => router.push('/settings')}
             >
-              <Text style={styles.settingsLinkText}>⚙️ Change Filters</Text>
+              <Text style={[styles.settingsLinkText, { color: themeColors.tint }]}>⚙️ Change Filters</Text>
             </Pressable>
           </View>
         )}
@@ -226,7 +233,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
                   <View style={styles.suggestionHeader}>
                     <Text style={styles.suggestionName}>{item.name}</Text>
                     {item.buildingCode && (
-                      <Text style={styles.suggestionCode}>{item.buildingCode}</Text>
+                      <Text style={[styles.suggestionCode, { color: themeColors.tint, backgroundColor: 'rgba(69,0,132,0.08)' }]}>{item.buildingCode}</Text>
                     )}
                   </View>
                   {item.address && (
@@ -243,7 +250,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
         {/* Loading State */}
         {selectedBuilding && isLiveParkingLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
+            <ActivityIndicator size="large" color={themeColors.tint} />
             <Text style={styles.loadingText}>Finding best parking options...</Text>
           </View>
         )}
@@ -261,7 +268,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
                 <View style={styles.recommendationItem}>
                   <View style={styles.recommendationHeader}>
                     <Text style={styles.recommendationName}>{item.name}</Text>
-                    <Text style={styles.recommendationDistance}>
+                    <Text style={[styles.recommendationDistance, { color: themeColors.tint }]}>
                       {(item.distance * 5280).toFixed(0)} ft
                     </Text>
                   </View>
@@ -290,7 +297,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
             />
 
             <TouchableOpacity
-              style={styles.viewMapButton}
+              style={[styles.viewMapButton, { backgroundColor: themeColors.tint }]}
               onPress={() => router.push('/explore')}
             >
               <Text style={styles.viewMapButtonText}>View on Map</Text>
@@ -305,7 +312,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
               Search for any JMU building to find the closest parking spots with live availability
             </Text>
             <TouchableOpacity
-              style={styles.exploreButton}
+              style={[styles.exploreButton, { backgroundColor: themeColors.tint }]}
               onPress={() => router.push('/explore')}
             >
               <Text style={styles.exploreButtonText}>Explore All Parking</Text>
@@ -322,10 +329,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f4f4f8',
   },
+  headerBand: {
+    height: 56,
+    backgroundColor: '#450084',
+  },
+  headerBandFull: {
+    backgroundColor: '#450084',
+    paddingTop: 12,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 4,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 32,
@@ -409,8 +439,6 @@ const styles = StyleSheet.create({
   suggestionCode: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#007AFF',
-    backgroundColor: '#f0f8ff',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -468,7 +496,6 @@ const styles = StyleSheet.create({
   },
   recommendationDistance: {
     fontSize: 14,
-    color: '#007AFF',
     fontWeight: '600',
   },
   recommendationType: {
@@ -497,7 +524,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   viewMapButton: {
-    backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -522,7 +548,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   exploreButton: {
-    backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -555,7 +580,6 @@ const styles = StyleSheet.create({
   },
   settingsLinkText: {
     fontSize: 12,
-    color: '#007AFF',
     fontWeight: '500',
   },
 });

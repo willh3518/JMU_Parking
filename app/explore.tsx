@@ -1,8 +1,11 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import area from '@turf/area';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import { point, polygon as turfPolygon } from '@turf/helpers';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -266,6 +269,9 @@ export default function ExploreScreen() {
     Alert.alert('Get Directions', 'Choose a maps app', options);
   };
 
+  const theme = useColorScheme() ?? 'light';
+  const themeColors = Colors[theme];
+
   const getParkingColors = (spot: ParkingSpot) => {
     let type = spot.attributes.Type;
     const isAvailableNow = isCommuterParkingAvailable();
@@ -275,24 +281,24 @@ export default function ExploreScreen() {
     let fillColor = 'rgba(128, 128, 128, 0.4)';
     let strokeColor = '#808080';
     if (type === 'Commuter') {
-      fillColor = 'rgba(0, 0, 139, 0.4)';
-      strokeColor = '#8A2BE2';
+      fillColor = 'rgba(69, 0, 132, 0.12)';
+      strokeColor = themeColors.tint;
     } else if (type === 'Resident') {
-      fillColor = 'rgba(173, 216, 230, 0.5)';
-      strokeColor = '#8A2BE2';
+      fillColor = 'rgba(69, 0, 132, 0.10)';
+      strokeColor = themeColors.tint;
     } else if (type === 'Parking Deck') {
-      fillColor = 'rgba(138, 43, 226, 0.4)';
-      strokeColor = '#8A2BE2';
+      fillColor = 'rgba(69, 0, 132, 0.18)';
+      strokeColor = themeColors.tint;
     } else if (type === 'Faculty/Staff') {
-        fillColor = 'rgba(255, 0, 0, 0.3)';
-        strokeColor = '#8A2BE2';
+      fillColor = 'rgba(69, 0, 132, 0.08)';
+      strokeColor = themeColors.tint;
     } else if (type === 'Downtown') {
       fillColor = 'rgba(60, 179, 113, 0.5)';
       strokeColor = '#3CB371';
     }
     if (selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID) {
-      fillColor = 'rgba(255, 215, 0, 0.6)';
-      strokeColor = '#FFD700';
+      fillColor = theme === 'light' ? 'rgba(203, 182, 119, 0.32)' : 'rgba(203, 182, 119, 0.26)';
+      strokeColor = Colors[theme].accent;
     }
     return { fillColor, strokeColor };
   };
@@ -305,7 +311,7 @@ export default function ExploreScreen() {
         const parts = timing.split(keyword);
       return (
         <View>
-            <Text style={[styles.infoDescription, { fontWeight: 'bold', color: '#8A2BE2', marginBottom: 2 }]}>{keyword}</Text>
+            <Text style={[styles.infoDescription, { fontWeight: 'bold', color: themeColors.tint, marginBottom: 2 }]}>{keyword}</Text>
             <Text style={styles.infoDescription}>{parts[1] || ''}</Text>
         </View>
       );
@@ -322,7 +328,12 @@ export default function ExploreScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#450084' }]}>
+      <StatusBar style="light" />
+      <View style={styles.headerBandFull}>
+        <Text style={styles.headerTitle}>Explore Parking</Text>
+        <Text style={styles.headerSubtitle}>Tap a lot to view details</Text>
+      </View>
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -362,10 +373,10 @@ export default function ExploreScreen() {
 
       {/* The Permission Denied Banner */}
       {permissionStatus === 'denied' && (
-        <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>
+        <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>          
           <Text style={styles.permissionText}>Location permission is needed to show your position.</Text>
           <Pressable
-            style={styles.permissionButton}
+            style={[styles.permissionButton, { backgroundColor: themeColors.tint }]}
             onPress={() => Linking.openSettings()}
           >
             <Text style={styles.permissionButtonText}>Enable Location in Settings</Text>
@@ -403,7 +414,7 @@ export default function ExploreScreen() {
              </Text>
           )}
 
-          <Pressable onPress={openDirections} style={styles.directionsButton}>
+          <Pressable onPress={openDirections} style={[styles.directionsButton, { backgroundColor: themeColors.tint }]}>
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
         </View>
@@ -417,6 +428,24 @@ const styles = StyleSheet.create({
   map: { width: '100%', height: '100%' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: 'red' },
+  headerBandFull: {
+    backgroundColor: '#450084',
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 2,
+  },
   searchWrapper: {
     position: 'absolute',
     top: 60,
@@ -487,7 +516,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   directionsButton: {
-    backgroundColor: '#007AFF',
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',
@@ -528,7 +556,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   permissionButton: {
-    backgroundColor: '#007AFF',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 8,
