@@ -2,19 +2,18 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList, Keyboard, Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { useFilters } from '../context/FilterContext';
-import jmuBuildings from '../data/jmuBuildings.json';
+import jmuBuildings from '../data/jmu_buildings.json';
 import jmuParkingData from '../data/jmuParkingData.json';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
@@ -48,10 +47,10 @@ export default function MainScreen() {
   const { filters } = useFilters();
 
   // Calculate distance between two coordinates (Haversine formula)
-  const calculateDistance = (coord1, coord2) => {
+  function calculateDistance(coord1, coord2) {
+    if (!Array.isArray(coord1) || !Array.isArray(coord2) || coord1.length < 2 || coord2.length < 2) return 9999;
     const [lon1, lat1] = coord1;
     const [lon2, lat2] = coord2;
-
     const R = 3959; // Earth's radius in miles
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -61,7 +60,7 @@ export default function MainScreen() {
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
-  };
+  }
 
   // Helper function to check if parking is available based on time and filters
   const isParkingTypeAllowed = (parkingType, isConditional = false) => {
@@ -82,77 +81,66 @@ export default function MainScreen() {
     return false;
   };
 
-  // Get parking recommendations for a building
-  const getParkingRecommendations = (building) => {
+  // Helper to get centroid from building polygon
+  function getBuildingCentroid(rings) {
+    if (!Array.isArray(rings) || rings.length === 0) return [0, 0];
+    const coords = Array.isArray(rings[0]) ? rings[0] : [];
+    if (!coords.length) return [0, 0];
+    const avgLat = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
+    const avgLon = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
+    return [avgLon, avgLat];
+  }
+
+  // Get parking recommendations for a building using coordinates only
+  function getParkingRecommendations(building) {
     const recommendations = [];
-
-    // Process each parking spot
+    // Get centroid from building geometry
+    const buildingCentroid = getBuildingCentroid(building.geometry?.rings);
     jmuParkingData.forEach((spot) => {
-      // Check if this parking type is allowed by current filter settings
       if (!isParkingTypeAllowed(spot.type, spot.isConditional)) {
-        return; // Skip this parking spot if it's filtered out
+        return;
       }
-
-      // Calculate center of polygon for distance calculation
-      const coords = spot.polygon;
-      const centerLat = coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length;
-const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.length;
-
-      const distance = calculateDistance(building.coordinates, [centerLon, centerLat]);
-
-      // Check if this parking spot has live data
+      // Calculate center of polygon for parking spot
+      let spotCoords = [0, 0];
+      if (Array.isArray(spot.polygon) && spot.polygon.length > 0) {
+        const coords = spot.polygon;
+        const centerLat = coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length;
+        const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.length;
+        spotCoords = [centerLon, centerLat];
+      }
+      const distance = calculateDistance(buildingCentroid, spotCoords);
       const liveData = liveParkingData?.find(live => live.name === spot.name);
       const hasLiveData = !!liveData;
       const availableSpaces = liveData?.availableSpaces;
-
       recommendations.push({
         name: spot.name,
         type: spot.type,
         distance: distance,
         availableSpaces: availableSpaces,
         hasLiveData: hasLiveData,
-        coordinates: [centerLon, centerLat],
         timing: spot.timing
       });
     });
+    // Sort by straight-line distance (lower is better)
+    return recommendations.sort((a, b) => a.distance - b.distance).slice(0, 5);
+  }
 
-    // Sort recommendations: prioritize parking decks with available spaces, then by distance
-    return recommendations.sort((a, b) => {
-      // If both have live data, prioritize the one with more spaces
-      if (a.hasLiveData && b.hasLiveData && a.availableSpaces && b.availableSpaces) {
-        if (a.availableSpaces > 0 && b.availableSpaces === 0) return -1;
-        if (b.availableSpaces > 0 && a.availableSpaces === 0) return 1;
-        if (Math.abs(a.distance - b.distance) < 0.1) { // If distances are similar (within 0.1 miles)
-          return b.availableSpaces - a.availableSpaces; // More spaces first
-        }
-      }
+  // Use buildings array from features property
+  const buildingsArray = jmuBuildings.features;
 
-      // Prioritize parking decks with live data over those without
-      if (a.hasLiveData && !b.hasLiveData && Math.abs(a.distance - b.distance) < 0.2) return -1;
-      if (b.hasLiveData && !a.hasLiveData && Math.abs(a.distance - b.distance) < 0.2) return 1;
-
-      // Finally, sort by distance
-      return a.distance - b.distance;
-    }).slice(0, 5); // Return top 5 recommendations
-  };
+  // Fix: Ensure searchQuery is always a string
+  const safeSearchQuery = typeof searchQuery === 'string' ? searchQuery : '';
 
   // Filter buildings based on search query
   const filteredBuildings = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase();
-    return jmuBuildings.filter(building => {
-      // Search by name (primary search)
-      if (building.name.toLowerCase().includes(query)) return true;
-
-      // Search by building code (if available)
-      if (building.buildingCode && building.buildingCode.toLowerCase().includes(query)) return true;
-
-      // Search by address (if available)
-      if (building.address && building.address.toLowerCase().includes(query)) return true;
-
+    if (!safeSearchQuery.trim()) return [];
+    const query = safeSearchQuery.toLowerCase();
+    return buildingsArray.filter(building => {
+      const name = building.attributes?.BldgName?.toLowerCase() || '';
+      if (name.includes(query)) return true;
       return false;
-    }).slice(0, 10); // Show top 10 matches
-  }, [searchQuery]);
+    }).slice(0, 10);
+  }, [safeSearchQuery]);
 
   // Get recommendations for selected building
   const recommendations = useMemo(() => {
@@ -162,8 +150,9 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
 
   const handleBuildingSelect = (building) => {
     setSelectedBuilding(building);
-    setSearchQuery(building.name);
+    setSearchQuery(building.attributes?.BldgName || '');
     setShowSuggestions(false);
+    Keyboard.dismiss(); // Dismiss the keyboard when a building is selected
   };
 
   const handleSearchChange = (text) => {
@@ -193,6 +182,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
           <TextInput
             style={styles.searchInput}
             placeholder="Search buildings (e.g., Wilson Hall, UREC, ISAT)..."
+            placeholderTextColor="#444"
             value={searchQuery}
             onChangeText={handleSearchChange}
             onFocus={() => setShowSuggestions(searchQuery.length > 0)}
@@ -224,20 +214,21 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
           <View style={styles.suggestionsContainer}>
             <FlatList
               data={filteredBuildings}
-              keyExtractor={(item) => item.name}
+              keyExtractor={(item) => item.attributes?.BldgName || Math.random().toString()}
               renderItem={({ item }) => (
                 <Pressable
                   style={styles.suggestionItem}
                   onPress={() => handleBuildingSelect(item)}
+                  key={item.attributes?.BldgName || Math.random()}
                 >
                   <View style={styles.suggestionHeader}>
-                    <Text style={styles.suggestionName}>{item.name}</Text>
-                    {item.buildingCode && (
-                      <Text style={[styles.suggestionCode, { color: themeColors.tint, backgroundColor: 'rgba(69,0,132,0.08)' }]}>{item.buildingCode}</Text>
+                    <Text style={styles.suggestionName}>{item.attributes?.BldgName}</Text>
+                    {item.attributes?.BldgCode && (
+                      <Text style={[styles.suggestionCode, { color: themeColors.tint, backgroundColor: 'rgba(69,0,132,0.08)' }]}>{item.attributes.BldgCode}</Text>
                     )}
                   </View>
-                  {item.address && (
-                    <Text style={styles.suggestionAddress}>{item.address}</Text>
+                  {item.attributes?.Address && (
+                    <Text style={styles.suggestionAddress}>{item.attributes.Address}</Text>
                   )}
                 </Pressable>
               )}
@@ -259,7 +250,7 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
         {selectedBuilding && !isLiveParkingLoading && recommendations.length > 0 && (
           <View style={styles.recommendationsContainer}>
             <Text style={styles.recommendationsTitle}>
-              Best parking for {selectedBuilding.name}:
+              Best parking for {selectedBuilding.attributes?.BldgName}:
             </Text>
             <FlatList
               data={recommendations}
@@ -295,12 +286,19 @@ const centerLon = coords.reduce((sum, coord) => sum + coord[0], 0) / coords.leng
               )}
               style={styles.recommendationsList}
             />
-
+            {/* Small See on Map button */}
             <TouchableOpacity
-              style={[styles.viewMapButton, { backgroundColor: themeColors.tint }]}
-              onPress={() => router.push('/explore')}
+              style={styles.seeOnMapButton}
+              onPress={() => {
+                // Pass recommended spot IDs to explore page
+                const recommendedIds = recommendations.map(r => r.name);
+                router.push({
+                  pathname: '/explore',
+                  params: { highlightIds: JSON.stringify(recommendedIds) }
+                });
+              }}
             >
-              <Text style={styles.viewMapButtonText}>View on Map</Text>
+              <Text style={styles.seeOnMapButtonText}>See on Map</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -387,6 +385,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    color: '#222', // Make input text darker
   },
   clearButton: {
     position: 'absolute',
@@ -536,27 +535,27 @@ const styles = StyleSheet.create({
   },
   defaultContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  exploreButton: {
+    marginTop: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exploreButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   defaultText: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 24,
-  },
-  exploreButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  exploreButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    marginBottom: 20,
   },
   filterStatusContainer: {
     backgroundColor: '#f8f9fa',
@@ -581,5 +580,18 @@ const styles = StyleSheet.create({
   settingsLinkText: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  seeOnMapButton: {
+  marginTop: 4,
+    alignSelf: 'flex-end',
+    backgroundColor: '#450084',
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  seeOnMapButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

@@ -8,17 +8,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    AppState,
-    AppStateStatus,
-    Linking,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    View
+  ActivityIndicator,
+  Alert,
+  AppState,
+  AppStateStatus,
+  Linking,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -74,6 +74,19 @@ export default function ExploreScreen() {
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const { filters } = useFilters();
+  const params = useLocalSearchParams();
+  let highlightIds: string[] | null = null;
+  if (params.highlightIds) {
+    if (Array.isArray(params.highlightIds)) {
+      highlightIds = params.highlightIds;
+    } else if (typeof params.highlightIds === 'string') {
+      try {
+        highlightIds = JSON.parse(params.highlightIds);
+      } catch {
+        highlightIds = [params.highlightIds];
+      }
+    }
+  }
 
   // Add live parking data hook
   const {
@@ -86,7 +99,6 @@ export default function ExploreScreen() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [permissionStatus, setPermissionStatus] = useState<Location.PermissionStatus | null>(null);
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
   const router = useRouter();
   const initialMapRegion = {
@@ -133,7 +145,6 @@ export default function ExploreScreen() {
           longitudeDelta: 0.003,
         }, 1000);
 
-        // Just select the spot. This will now be the single source of truth.
         setSelectedSpot(spotToFocus);
 
         router.setParams({ selectedLotId: undefined });
@@ -170,7 +181,17 @@ export default function ExploreScreen() {
           },
           geometry: { rings: [spot.polygon] },
         }));
-        setAllParkingData([...cityParkingSpots, ...jmuParkingSpots]);
+        // Remove duplicate 'shed' parking spots
+        const combinedSpots = [...cityParkingSpots, ...jmuParkingSpots];
+        const seenSheds = new Set();
+        const filteredSpots = combinedSpots.filter(spot => {
+          if ((spot.attributes.ParkingName || '').toLowerCase() === 'shed') {
+            if (seenSheds.has('shed')) return false;
+            seenSheds.add('shed');
+          }
+          return true;
+        });
+        setAllParkingData(filteredSpots);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -201,6 +222,16 @@ export default function ExploreScreen() {
       return false;
     });
   }, [filters, allParkingData, currentTime, selectedSpot]); // Add selectedSpot to dependencies
+
+  // Filter parking spots to highlight only recommended ones if highlightIds is present
+  const displayedParkingSpots = useMemo(() => {
+    if (highlightIds && Array.isArray(highlightIds)) {
+      // Only show and highlight the 5 recommended spots from filteredParkingData
+      return filteredParkingData.filter(spot => highlightIds.includes(spot.attributes.ParkingName));
+    }
+    // Otherwise, show only filtered parking spots
+    return filteredParkingData;
+  }, [filteredParkingData, highlightIds]);
 
   const getPolygonCentroid = (rings: number[][][]) => {
     const allPoints = rings[0];
@@ -293,7 +324,7 @@ export default function ExploreScreen() {
       fillColor = 'rgba(69, 0, 132, 0.08)';
       strokeColor = themeColors.tint;
     } else if (type === 'Downtown') {
-      fillColor = 'rgba(60, 179, 113, 0.5)';
+      fillColor = 'rgba(0,0,0,0)'; // transparent fill
       strokeColor = '#3CB371';
     }
     if (selectedSpot?.attributes.OBJECTID === spot.attributes.OBJECTID) {
@@ -319,6 +350,25 @@ export default function ExploreScreen() {
     return <Text style={styles.infoDescription}>{timing}</Text>;
   };
 
+  useEffect(() => {
+    if (highlightIds && Array.isArray(highlightIds) && mapRef.current && displayedParkingSpots.length > 0) {
+      // Collect all coordinates from highlighted polygons
+      const allCoords = displayedParkingSpots.flatMap(spot =>
+        Array.isArray(spot.geometry.rings[0])
+          ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }))
+          : []
+      );
+      if (allCoords.length > 0) {
+        mapRef.current.fitToCoordinates(allCoords, {
+          edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
+          animated: true,
+        });
+        // Only clear highlightIds after zooming and data is loaded
+        router.setParams({ highlightIds: undefined });
+      }
+    }
+  }, [highlightIds, displayedParkingSpots]);
+
   if (isLoading) {
     return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
   }
@@ -342,19 +392,17 @@ export default function ExploreScreen() {
         onPress={handleMapPress}
         onRegionChangeComplete={setCurrentRegion}
       >
-        {filteredParkingData.map((spot: ParkingSpot) => {
-          const coordinates = spot.geometry.rings[0].map(point => ({
-            latitude: point[1],
-            longitude: point[0],
-          }));
-          const colors = getParkingColors(spot);
-
+        {displayedParkingSpots.map((spot, idx) => {
+          const key = getSpotKey(spot, idx);
+          // Remove highlight logic, use default fill and stroke colors
+          const fillColor = getParkingColors(spot).fillColor;
+          const strokeColor = getParkingColors(spot).strokeColor;
           return (
             <Polygon
-              key={spot.attributes.OBJECTID}
-              coordinates={coordinates}
-              strokeColor={colors.strokeColor}
-              fillColor={colors.fillColor}
+              key={key}
+              coordinates={Array.isArray(spot.geometry.rings[0]) ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) : []}
+              strokeColor={strokeColor}
+              fillColor={fillColor}
               strokeWidth={2}
               tappable={false}
             />
@@ -363,9 +411,22 @@ export default function ExploreScreen() {
       </MapView>
 
       <Pressable
-        style={[styles.homeButton, { top: insets.top + 20 }]}
+  style={[styles.homeButton, { top: insets.top + 60 }]}
         onPress={() => {
-          mapRef.current?.animateToRegion(initialMapRegion, 1000);
+          // Get all coordinates from displayed parking spots
+          const allCoords = displayedParkingSpots.flatMap(spot =>
+            Array.isArray(spot.geometry.rings[0])
+              ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }))
+              : []
+          );
+          if (allCoords.length > 0) {
+            mapRef.current?.fitToCoordinates(allCoords, {
+              edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
+              animated: true,
+            });
+          } else {
+            mapRef.current?.animateToRegion(initialMapRegion, 1000);
+          }
         }}
       >
         <Text style={styles.homeButtonText}>🏠</Text>
@@ -592,3 +653,17 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
   },
 });
+
+function getSpotKey(spot: ParkingSpot, idx: number) {
+  const id = spot.attributes.OBJECTID ?? 'id';
+  const name = spot.attributes.ParkingName ?? 'name';
+  // Hash coordinates for uniqueness
+  const coordsString = JSON.stringify(spot.geometry.rings[0]);
+  // Simple hash function for coordinates
+  let coordHash = 0;
+  for (let i = 0; i < coordsString.length; i++) {
+    coordHash = ((coordHash << 5) - coordHash) + coordsString.charCodeAt(i);
+    coordHash |= 0;
+  }
+  return `${id}-${name}-${coordHash}-${idx}`;
+}
