@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiveParkingInfo } from '../components/LiveParkingInfo';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
+import jmuBuildingsData from '../data/jmu_buildings.json';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
 
 // Type Definitions
@@ -69,6 +70,10 @@ const isCommuterParkingAvailable = (): boolean => {
 };
 
 export default function ExploreScreen() {
+  const [highlightedBuildingPolygon, setHighlightedBuildingPolygon] = useState<number[][] | null>(null);
+  const [highlightBuildingId, setHighlightBuildingId] = useState<number | null>(null);
+  const [showBuildingPin, setShowBuildingPin] = useState(false);
+  const [buildingPinCoords, setBuildingPinCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
@@ -76,6 +81,7 @@ export default function ExploreScreen() {
   const { filters } = useFilters();
   const params = useLocalSearchParams();
   let highlightIds: string[] | null = null;
+  let highlightBuilding: string | null = null;
   if (params.highlightIds) {
     if (Array.isArray(params.highlightIds)) {
       highlightIds = params.highlightIds;
@@ -86,6 +92,9 @@ export default function ExploreScreen() {
         highlightIds = [params.highlightIds];
       }
     }
+  }
+  if (params.highlightBuilding) {
+    highlightBuilding = params.highlightBuilding as string;
   }
 
   // Add live parking data hook
@@ -108,6 +117,24 @@ export default function ExploreScreen() {
     longitudeDelta: 0.04,
   }
   const [currentRegion, setCurrentRegion] = useState(initialMapRegion);
+
+  // Center map to show all parking spots on initial load
+  useEffect(() => {
+    if (mapRef.current && allParkingData.length > 0) {
+      // Gather all coordinates from all parking polygons
+      const allCoords = allParkingData.flatMap(spot =>
+        Array.isArray(spot.geometry.rings[0])
+          ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }))
+          : []
+      );
+      if (allCoords.length > 0) {
+        mapRef.current.fitToCoordinates(allCoords, {
+          edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
+          animated: true,
+        });
+      }
+    }
+  }, [allParkingData]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -282,8 +309,34 @@ export default function ExploreScreen() {
 
   const openDirections = () => {
     if (!selectedSpot) return;
+    console.log('Selected spot:', selectedSpot);
     const centroid = getPolygonCentroid(selectedSpot.geometry.rings);
+    console.log('Centroid:', centroid);
+    // Ensure correct coordinate order for Marker: latitude, longitude
     const { latitude, longitude } = centroid;
+
+    // Find the JMU building polygon by name (or other identifier) from jmu_buildings.json
+    let buildingPolygon: number[][] | null = null;
+    if (selectedSpot) {
+      // jmuBuildingsData.features is an array of { attributes: { BldgName }, geometry: { rings } }
+      const buildingFeature = (jmuBuildingsData.features || []).find(
+        (feature: any) => feature.attributes.BldgName === selectedSpot.attributes.ParkingName
+      );
+      if (buildingFeature && buildingFeature.geometry && Array.isArray(buildingFeature.geometry.rings[0])) {
+        buildingPolygon = buildingFeature.geometry.rings[0];
+      }
+    }
+    setHighlightedBuildingPolygon(buildingPolygon ?? null);
+    // Animate map to building location for visibility
+    if (typeof latitude === 'number' && typeof longitude === 'number' && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.0008,
+        longitudeDelta: 0.0008,
+      }, 500);
+    }
+    setTimeout(() => setHighlightedBuildingPolygon(null), 6000); // Highlight disappears after 6 seconds
     const latLng = `${latitude},${longitude}`;
     const options = [
       { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/place/62+W+Bruce+St,+Harrisonburg,+VA+22801/@38.4474395,-78.8700416,115m/data=!3m1!1e3!4m6!3m5!1s0x89b492cfa20ba235:0x7daec6a9f0478f5!8m2!3d38.4476542!4d-78.8697506!16s%2Fg%2F11tfkrb7gx?entry=ttu2{latLng}`), style: 'default' as const },
@@ -351,8 +404,34 @@ export default function ExploreScreen() {
   };
 
   useEffect(() => {
+    // Highlight building if highlightBuilding param is present
+    if (highlightBuilding && highlightIds && mapRef.current) {
+      // Highlight the building polygon
+      const buildingFeature = (jmuBuildingsData.features || []).find(
+        (feature: any) => feature.attributes.BldgName === highlightBuilding
+      );
+      if (buildingFeature && buildingFeature.geometry && Array.isArray(buildingFeature.geometry.rings[0])) {
+        setHighlightedBuildingPolygon(buildingFeature.geometry.rings[0]);
+      }
+      // Only fit map to top 5 recommended parking spots
+      let parkingCoords: { latitude: number; longitude: number }[] = [];
+      displayedParkingSpots.forEach(spot => {
+        if (Array.isArray(spot.geometry.rings[0])) {
+          parkingCoords = parkingCoords.concat(spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })));
+        }
+      });
+      if (parkingCoords.length > 0) {
+        mapRef.current.fitToCoordinates(parkingCoords, {
+          edgePadding: { top: 0, right: 0, bottom: 0, left: 0 },
+          animated: true,
+        });
+      }
+      setTimeout(() => setHighlightedBuildingPolygon(null), 6000);
+      // Only clear highlightBuilding and highlightIds after highlighting
+      router.setParams({ highlightBuilding: undefined, highlightIds: undefined });
+    }
+    // Existing highlightIds logic for parking spots
     if (highlightIds && Array.isArray(highlightIds) && mapRef.current && displayedParkingSpots.length > 0) {
-      // Collect all coordinates from highlighted polygons
       const allCoords = displayedParkingSpots.flatMap(spot =>
         Array.isArray(spot.geometry.rings[0])
           ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng }))
@@ -363,11 +442,10 @@ export default function ExploreScreen() {
           edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
           animated: true,
         });
-        // Only clear highlightIds after zooming and data is loaded
         router.setParams({ highlightIds: undefined });
       }
     }
-  }, [highlightIds, displayedParkingSpots]);
+  }, [highlightIds, highlightBuilding, displayedParkingSpots]);
 
   if (isLoading) {
     return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
@@ -392,9 +470,18 @@ export default function ExploreScreen() {
         onPress={handleMapPress}
         onRegionChangeComplete={setCurrentRegion}
       >
+        {/* Highlight JMU building polygon for 6 seconds in red */}
+        {highlightedBuildingPolygon && (
+          <Polygon
+            coordinates={highlightedBuildingPolygon.map(([lng, lat]) => ({ latitude: lat, longitude: lng }))}
+            strokeColor="#FF0000"
+            fillColor="rgba(255,0,0,0.45)"
+            strokeWidth={3}
+            tappable={false}
+          />
+        )}
         {displayedParkingSpots.map((spot, idx) => {
           const key = getSpotKey(spot, idx);
-          // Remove highlight logic, use default fill and stroke colors
           const fillColor = getParkingColors(spot).fillColor;
           const strokeColor = getParkingColors(spot).strokeColor;
           return (
@@ -475,7 +562,7 @@ export default function ExploreScreen() {
              </Text>
           )}
 
-          <Pressable onPress={openDirections} style={[styles.directionsButton, { backgroundColor: themeColors.tint }]}>
+          <Pressable onPress={openDirections} style={[styles.directionsButton, { backgroundColor: themeColors.tint }]}> 
             <Text style={styles.directionsText}>Take me there</Text>
           </Pressable>
         </View>

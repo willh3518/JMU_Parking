@@ -288,14 +288,18 @@ export default function MainScreen() {
             />
             {/* Small See on Map button */}
             <TouchableOpacity
-              style={styles.seeOnMapButton}
+              style={[styles.seeOnMapButton, { position: 'absolute', left: 0, right: 0, bottom: 8, marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center', zIndex: 10 }]}
               onPress={() => {
-                // Pass recommended spot IDs to explore page
-                const recommendedIds = recommendations.map(r => r.name);
-                router.push({
-                  pathname: '/explore',
-                  params: { highlightIds: JSON.stringify(recommendedIds) }
-                });
+                // Pass the top 5 recommended parking spot names to explore page for zoom/highlight
+                if (selectedBuilding && recommendations.length > 0) {
+                  router.push({
+                    pathname: '/explore',
+                    params: {
+                      highlightBuilding: selectedBuilding.attributes?.BldgName,
+                      highlightIds: JSON.stringify(recommendations.map(r => r.name))
+                    }
+                  });
+                }
               }}
             >
               <Text style={styles.seeOnMapButtonText}>See on Map</Text>
