@@ -1,8 +1,8 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
-import React from 'react';
 import { Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { FilterProvider } from '../context/FilterContext';
 
 export default function TabLayout() {
@@ -10,6 +10,7 @@ export default function TabLayout() {
   const themeColors = Colors[theme];
 
   return (
+    <SafeAreaProvider>
     <FilterProvider>
       <Tabs
         screenOptions={{
@@ -54,5 +55,6 @@ export default function TabLayout() {
         <Tabs.Screen name="+not-found" options={{ href: null }} />
       </Tabs>
     </FilterProvider>
+    </SafeAreaProvider>
   );
 }

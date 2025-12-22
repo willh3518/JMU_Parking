@@ -6,22 +6,21 @@ import { point, polygon as turfPolygon } from '@turf/helpers';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  AppState,
-  AppStateStatus,
-  Linking,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View
+    ActivityIndicator,
+    Alert,
+    AppState,
+    AppStateStatus,
+    Linking,
+    Platform,
+    Pressable,
+    StyleSheet,
+    Text,
+    View
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiveParkingInfo } from '../components/LiveParkingInfo';
 import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
@@ -714,7 +713,7 @@ const styles = StyleSheet.create({
   },
   homeButton: {
     position: 'absolute',
-    right: 20,
+    left: 20,
     backgroundColor: 'white',
     borderRadius: 20,
     width: 40,
