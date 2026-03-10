@@ -338,7 +338,7 @@ export default function ExploreScreen() {
     setTimeout(() => setHighlightedBuildingPolygon(null), 6000); // Highlight disappears after 6 seconds
     const latLng = `${latitude},${longitude}`;
     const options = [
-      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/place/62+W+Bruce+St,+Harrisonburg,+VA+22801/@38.4474395,-78.8700416,115m/data=!3m1!1e3!4m6!3m5!1s0x89b492cfa20ba235:0x7daec6a9f0478f5!8m2!3d38.4476542!4d-78.8697506!16s%2Fg%2F11tfkrb7gx?entry=ttu2{latLng}`), style: 'default' as const },
+      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`), style: 'default' as const },
       { text: 'Waze', onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`), style: 'default' as const },
       { text: 'Cancel', style: 'cancel' as const },
     ];
