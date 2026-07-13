@@ -1,23 +1,23 @@
-import { Colors } from '@/constants/Colors';
+import { BrandColors, Colors, StatusColors, WarningColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import area from '@turf/area';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import { point, polygon as turfPolygon } from '@turf/helpers';
+import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    AppState,
-    AppStateStatus,
-    Linking,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    View
+  Alert,
+  AppState,
+  AppStateStatus,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import MapView, { MapPressEvent, Polygon } from 'react-native-maps';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,11 @@ import { useFilters } from '../context/FilterContext';
 import jmuParkingData from '../data/jmuParkingData.json';
 import jmuBuildingsData from '../data/jmu_buildings.json';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
+import { hapticImpact, hapticSelection } from '../utils/haptics';
+import { filterValidParkingSpots } from '../utils/parkingSpotGeometry';
+
+const DOWNTOWN_API_URL = 'https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326';
+const DOWNTOWN_FETCH_TIMEOUT_MS = 10000;
 
 // Type Definitions
 type ParkingSpot = {
@@ -70,12 +75,14 @@ const isCommuterParkingAvailable = (): boolean => {
 
 export default function ExploreScreen() {
   const [highlightedBuildingPolygon, setHighlightedBuildingPolygon] = useState<number[][] | null>(null);
+  const [highlightedParkingSpots, setHighlightedParkingSpots] = useState<ParkingSpot[]>([]);
   const [highlightBuildingId, setHighlightBuildingId] = useState<number | null>(null);
   const [showBuildingPin, setShowBuildingPin] = useState(false);
   const [buildingPinCoords, setBuildingPinCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [allParkingData, setAllParkingData] = useState<ParkingSpot[]>([]);
+  const [downtownSpots, setDowntownSpots] = useState<ParkingSpot[]>([]);
+  const [isDowntownLoading, setIsDowntownLoading] = useState<boolean>(true);
+  const [downtownError, setDowntownError] = useState<string | null>(null);
+  const [downtownBannerDismissed, setDowntownBannerDismissed] = useState<boolean>(false);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const { filters } = useFilters();
   const params = useLocalSearchParams();
@@ -116,6 +123,71 @@ export default function ExploreScreen() {
     longitudeDelta: 0.04,
   }
   const [currentRegion, setCurrentRegion] = useState(initialMapRegion);
+
+  // JMU's own lot data is bundled locally — it can never fail to load, so it's
+  // computed synchronously and is always available from the very first render.
+  const jmuParkingSpots = useMemo(() => (jmuParkingData as JmuParkingSpot[]).map(
+    (spot: JmuParkingSpot, index: number): ParkingSpot => ({
+      attributes: {
+        OBJECTID: -1 - index,
+        ParkingName: spot.name,
+        address: spot.address,
+        ChangeTimingGroup: spot.timing,
+        Type: spot.type,
+        isConditional: spot.isConditional,
+      },
+      geometry: { rings: [spot.polygon] },
+    })
+  ), []);
+
+  // The downtown city lot data comes from an external ArcGIS feed and can fail
+  // independently of the JMU data above. A failure here must never block the
+  // rest of the screen — it only means downtown lots are temporarily missing.
+  const fetchDowntownData = useCallback(async () => {
+    setIsDowntownLoading(true);
+    setDowntownError(null);
+    setDowntownBannerDismissed(false);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DOWNTOWN_FETCH_TIMEOUT_MS);
+    try {
+      const response = await fetch(DOWNTOWN_API_URL, { signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const cityApiData = await response.json();
+      const cityParkingSpots: ParkingSpot[] = (cityApiData?.features || []).map((spot: ParkingSpot) => ({
+        ...spot,
+        attributes: { ...spot.attributes, Type: 'Downtown' },
+      }));
+      setDowntownSpots(cityParkingSpots);
+    } catch (e: any) {
+      setDowntownError(e?.name === 'AbortError' ? 'Request timed out' : (e?.message || 'Unknown error'));
+    } finally {
+      clearTimeout(timeoutId);
+      setIsDowntownLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDowntownData();
+  }, [fetchDowntownData]);
+
+  // Combine both sources and drop any spot with malformed/missing geometry
+  // before it can reach map rendering or tap-handling code (see
+  // utils/parkingSpotGeometry.ts). Also de-dupe the 'shed' lot, which can
+  // appear more than once across the two data sources.
+  const allParkingData = useMemo(() => {
+    const combinedSpots = [...downtownSpots, ...jmuParkingSpots];
+    const validSpots = filterValidParkingSpots(combinedSpots);
+    const seenSheds = new Set();
+    return validSpots.filter(spot => {
+      if ((spot.attributes.ParkingName || '').toLowerCase() === 'shed') {
+        if (seenSheds.has('shed')) return false;
+        seenSheds.add('shed');
+      }
+      return true;
+    });
+  }, [downtownSpots, jmuParkingSpots]);
 
   // Center map to show all parking spots on initial load
   useEffect(() => {
@@ -173,7 +245,7 @@ export default function ExploreScreen() {
 
         setSelectedSpot(spotToFocus);
 
-        router.setParams({ selectedLotId: undefined });
+        router.setParams({ selectedLotId: undefined as any });
       }
     }
   }, [params, allParkingData]);
@@ -185,48 +257,6 @@ export default function ExploreScreen() {
       setPermissionStatus(status);
     })();
   }, []);
-
-  // This useEffect fetches all the data
-  useEffect(() => {
-    const fetchAndCombineData = async () => {
-      try {
-        const response = await fetch('https://services5.arcgis.com/RnpJxEjCkCrMvNB1/arcgis/rest/services/Downtown_Parking/FeatureServer/2/query?f=json&where=1%3D1&outFields=*&returnGeometry=true&outSR=4326');
-        const cityApiData = await response.json();
-        const cityParkingSpots: ParkingSpot[] = (cityApiData?.features || []).map((spot: ParkingSpot) => ({
-          ...spot,
-          attributes: { ...spot.attributes, Type: 'Downtown' },
-        }));
-        const jmuParkingSpots = (jmuParkingData as JmuParkingSpot[]).map((spot: JmuParkingSpot, index: number): ParkingSpot => ({
-          attributes: {
-            OBJECTID: -1 - index,
-            ParkingName: spot.name,
-            address: spot.address,
-            ChangeTimingGroup: spot.timing,
-            Type: spot.type,
-            isConditional: spot.isConditional,
-          },
-          geometry: { rings: [spot.polygon] },
-        }));
-        // Remove duplicate 'shed' parking spots
-        const combinedSpots = [...cityParkingSpots, ...jmuParkingSpots];
-        const seenSheds = new Set();
-        const filteredSpots = combinedSpots.filter(spot => {
-          if ((spot.attributes.ParkingName || '').toLowerCase() === 'shed') {
-            if (seenSheds.has('shed')) return false;
-            seenSheds.add('shed');
-          }
-          return true;
-        });
-        setAllParkingData(filteredSpots);
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAndCombineData();
-  }, []);
-
 
   const filteredParkingData = useMemo(() => {
     const isAvailableNow = isCommuterParkingAvailable();
@@ -260,7 +290,12 @@ export default function ExploreScreen() {
   }, [filteredParkingData, highlightIds]);
 
   const getPolygonCentroid = (rings: number[][][]) => {
-    const allPoints = rings[0];
+    const allPoints = Array.isArray(rings?.[0]) ? rings[0] : [];
+    if (allPoints.length === 0) {
+      // Malformed/missing geometry — fall back to the map's default center
+      // instead of throwing on an empty reduce.
+      return { longitude: initialMapRegion.longitude, latitude: initialMapRegion.latitude };
+    }
     const centroid = allPoints.reduce(
       (acc, point) => ({
         longitude: acc.longitude + point[0] / allPoints.length,
@@ -275,11 +310,17 @@ export default function ExploreScreen() {
     const tappedCoordinate = e.nativeEvent.coordinate;
     const tappedPoint = point([tappedCoordinate.longitude, tappedCoordinate.latitude]);
 
-    // 1. Find all polygons that contain the tapped point using Turf.js
+    // 1. Find all polygons that contain the tapped point using Turf.js.
+    // A ring can pass the length check in filterValidParkingSpots but still be
+    // unclosed (first point !== last), which turf's polygon() rejects — catch
+    // that here so one bad ring can't crash the whole tap handler.
     const tappedPolygons = filteredParkingData.filter(spot => {
-      // Convert the spot's geometry to a Turf.js polygon
-      const spotPolygon = turfPolygon(spot.geometry.rings);
-      return booleanPointInPolygon(tappedPoint, spotPolygon);
+      try {
+        const spotPolygon = turfPolygon(spot.geometry.rings);
+        return booleanPointInPolygon(tappedPoint, spotPolygon);
+      } catch {
+        return false;
+      }
     });
 
     // If no polygons were tapped, clear the selection
@@ -292,13 +333,18 @@ export default function ExploreScreen() {
     let smallestSpot = tappedPolygons[0];
     if (tappedPolygons.length > 1) {
       smallestSpot = tappedPolygons.reduce((a, b) => {
-        const areaA = area(turfPolygon(a.geometry.rings));
-        const areaB = area(turfPolygon(b.geometry.rings));
-        return areaA < areaB ? a : b;
+        try {
+          const areaA = area(turfPolygon(a.geometry.rings));
+          const areaB = area(turfPolygon(b.geometry.rings));
+          return areaA < areaB ? a : b;
+        } catch {
+          return a;
+        }
       });
     }
 
     // 3. Toggle selection
+    hapticSelection();
     if (selectedSpot?.attributes.OBJECTID === smallestSpot.attributes.OBJECTID) {
       setSelectedSpot(null); // If it's already selected, deselect it
     } else {
@@ -308,6 +354,7 @@ export default function ExploreScreen() {
 
   const openDirections = () => {
     if (!selectedSpot) return;
+    hapticImpact(Haptics.ImpactFeedbackStyle.Medium);
     console.log('Selected spot:', selectedSpot);
     const centroid = getPolygonCentroid(selectedSpot.geometry.rings);
     console.log('Centroid:', centroid);
@@ -337,15 +384,36 @@ export default function ExploreScreen() {
     }
     setTimeout(() => setHighlightedBuildingPolygon(null), 6000); // Highlight disappears after 6 seconds
     const latLng = `${latitude},${longitude}`;
+    // Note: on Android, opening a custom-scheme app (Waze) that isn't in the
+    // manifest's <queries> package-visibility list can also fail silently even
+    // with the .catch() below — this app.json has no config plugin for that
+    // yet, so the .catch() Alert is the only feedback Android users get today.
     const options = [
-      { text: 'Google Maps', onPress: () => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`), style: 'default' as const },
-      { text: 'Waze', onPress: () => Linking.openURL(`waze://?ll=${latLng}&navigate=yes`), style: 'default' as const },
+      {
+        text: 'Google Maps',
+        onPress: () => {
+          Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latLng}`)
+            .catch(() => Alert.alert('Unable to Open Google Maps', 'Google Maps could not be opened on this device.'));
+        },
+        style: 'default' as const,
+      },
+      {
+        text: 'Waze',
+        onPress: () => {
+          Linking.openURL(`waze://?ll=${latLng}&navigate=yes`)
+            .catch(() => Alert.alert('Waze Not Available', 'Waze does not appear to be installed on this device.'));
+        },
+        style: 'default' as const,
+      },
       { text: 'Cancel', style: 'cancel' as const },
     ];
     if (Platform.OS === 'ios') {
       options.unshift({
         text: 'Apple Maps',
-        onPress: () => Linking.openURL(`http://maps.apple.com/?daddr=${latLng}`),
+        onPress: () => {
+          Linking.openURL(`http://maps.apple.com/?daddr=${latLng}`)
+            .catch(() => Alert.alert('Unable to Open Apple Maps', 'Apple Maps could not be opened on this device.'));
+        },
         style: 'default' as const,
       });
     }
@@ -388,18 +456,18 @@ export default function ExploreScreen() {
 
   const formatDescription = (spot: ParkingSpot) => {
     const timing = spot.attributes.ChangeTimingGroup;
-    if (!timing) return <Text style={styles.infoDescription}>No specific timing info available.</Text>;
+    if (!timing) return <Text style={[styles.infoDescription, { color: themeColors.text }]}>No specific timing info available.</Text>;
     const keyword = "Faculty and Staff Lot";
     if (timing.includes(keyword)) {
         const parts = timing.split(keyword);
       return (
         <View>
             <Text style={[styles.infoDescription, { fontWeight: 'bold', color: themeColors.tint, marginBottom: 2 }]}>{keyword}</Text>
-            <Text style={styles.infoDescription}>{parts[1] || ''}</Text>
+            <Text style={[styles.infoDescription, { color: themeColors.text }]}>{parts[1] || ''}</Text>
         </View>
       );
     }
-    return <Text style={styles.infoDescription}>{timing}</Text>;
+    return <Text style={[styles.infoDescription, { color: themeColors.text }]}>{timing}</Text>;
   };
 
   useEffect(() => {
@@ -412,6 +480,11 @@ export default function ExploreScreen() {
       if (buildingFeature && buildingFeature.geometry && Array.isArray(buildingFeature.geometry.rings[0])) {
         setHighlightedBuildingPolygon(buildingFeature.geometry.rings[0]);
       }
+      // displayedParkingSpots is already filtered down to just the top 5
+      // recommended spots while highlightIds is set — snapshot them now so
+      // the green highlight survives the highlightIds param being cleared
+      // below (which would otherwise widen displayedParkingSpots back out).
+      setHighlightedParkingSpots(displayedParkingSpots);
       // Only fit map to top 5 recommended parking spots
       let parkingCoords: { latitude: number; longitude: number }[] = [];
       displayedParkingSpots.forEach(spot => {
@@ -425,9 +498,12 @@ export default function ExploreScreen() {
           animated: true,
         });
       }
-      setTimeout(() => setHighlightedBuildingPolygon(null), 6000);
+      setTimeout(() => {
+        setHighlightedBuildingPolygon(null);
+        setHighlightedParkingSpots([]);
+      }, 6000);
       // Only clear highlightBuilding and highlightIds after highlighting
-      router.setParams({ highlightBuilding: undefined, highlightIds: undefined });
+      router.setParams({ highlightBuilding: undefined as any, highlightIds: undefined as any });
     }
     // Existing highlightIds logic for parking spots
     if (highlightIds && Array.isArray(highlightIds) && mapRef.current && displayedParkingSpots.length > 0) {
@@ -441,21 +517,13 @@ export default function ExploreScreen() {
           edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
           animated: true,
         });
-        router.setParams({ highlightIds: undefined });
+        router.setParams({ highlightIds: undefined as any });
       }
     }
   }, [highlightIds, highlightBuilding, displayedParkingSpots]);
 
-  if (isLoading) {
-    return <View style={styles.center}><ActivityIndicator size="large" /><Text>Loading...</Text></View>;
-  }
-
-  if (error) {
-    return <View style={styles.center}><Text style={styles.errorText}>Error: {error}</Text></View>;
-  }
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#450084' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: BrandColors.purple }]}>
       <StatusBar style="light" />
       <View style={styles.headerBandFull}>
         <Text style={styles.headerTitle}>Explore Parking</Text>
@@ -494,10 +562,23 @@ export default function ExploreScreen() {
             />
           );
         })}
+        {/* Recommended-spot highlight for 6 seconds after "See on Map" —
+            mirrors the red building highlight above, but green for "park here". */}
+        {highlightedParkingSpots.map((spot, idx) => (
+          <Polygon
+            key={`highlight-${getSpotKey(spot, idx)}`}
+            coordinates={Array.isArray(spot.geometry.rings[0]) ? spot.geometry.rings[0].map(([lng, lat]) => ({ latitude: lat, longitude: lng })) : []}
+            strokeColor={StatusColors.available}
+            fillColor="rgba(76, 175, 80, 0.45)"
+            strokeWidth={3}
+            tappable={false}
+          />
+        ))}
       </MapView>
 
       <Pressable
-  style={[styles.homeButton, { top: insets.top + 60 }]}
+  style={[styles.homeButton, { top: insets.top + 60, backgroundColor: themeColors.background }]}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         onPress={() => {
           // Get all coordinates from displayed parking spots
           const allCoords = displayedParkingSpots.flatMap(spot =>
@@ -518,6 +599,31 @@ export default function ExploreScreen() {
         <Text style={styles.homeButtonText}>🏠</Text>
       </Pressable>
 
+      {/* Downtown parking data unavailable — JMU lots still render above; this is
+          informational only, not a blocking error. */}
+      {downtownError && !downtownBannerDismissed && (
+        <View style={[styles.downtownBanner, { top: insets.top + 10 }]}>
+          <Text style={styles.downtownBannerText}>Downtown parking data unavailable — showing JMU lots only</Text>
+          <View style={styles.downtownBannerActions}>
+            <Pressable
+              onPress={fetchDowntownData}
+              disabled={isDowntownLoading}
+              style={styles.downtownBannerButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.downtownBannerButtonText}>{isDowntownLoading ? 'Retrying…' : 'Retry'}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setDowntownBannerDismissed(true)}
+              style={styles.downtownBannerDismiss}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={styles.downtownBannerDismissText}>✕</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       {/* The Permission Denied Banner */}
       {permissionStatus === 'denied' && (
         <View style={[styles.permissionOverlay, { paddingTop: insets.top + 10, paddingBottom: 10 }]}>          
@@ -533,15 +639,21 @@ export default function ExploreScreen() {
 
       {/* The Selected Spot Info Box */}
       {selectedSpot && (
-        <View style={styles.infoBox}>
-           <Pressable onPress={() => setSelectedSpot(null)} style={styles.closeButton}>
-             <Text style={styles.closeButtonText}>✕</Text>
-          </Pressable>
-          <Text style={styles.infoTitle}>{selectedSpot.attributes.ParkingName}</Text>
+        <View style={[styles.infoBox, { backgroundColor: themeColors.background }]}>
+           <View style={styles.infoBoxHeader}>
+             <Text style={[styles.infoTitle, { color: themeColors.text }]}>{selectedSpot.attributes.ParkingName}</Text>
+             <Pressable
+               onPress={() => setSelectedSpot(null)}
+               style={[styles.closeButton, { backgroundColor: themeColors.border }]}
+               hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+             >
+               <Text style={[styles.closeButtonText, { color: themeColors.icon }]}>✕</Text>
+             </Pressable>
+           </View>
 
           {/* Show live parking data for parking decks */}
           {selectedSpot.attributes.Type === 'Parking Deck' && (
-            <View style={styles.liveParkingContainer}>
+            <View style={[styles.liveParkingContainer, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
               <LiveParkingInfo
                 deckName={selectedSpot.attributes.ParkingName}
                 liveData={getParkingForDeck(selectedSpot.attributes.ParkingName)}
@@ -571,12 +683,10 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1 },
   map: { width: '100%', height: '100%' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  errorText: { color: 'red' },
   headerBandFull: {
-    backgroundColor: '#450084',
+    backgroundColor: BrandColors.purple,
     paddingTop: 12,
     paddingBottom: 12,
     paddingHorizontal: 16,
@@ -593,50 +703,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-  searchWrapper: {
-    position: 'absolute',
-    top: 60,
-    left: 10,
-    right: 10,
-    zIndex: 1,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  searchInput: {
-    flex: 1,
-    height: 50,
-    paddingHorizontal: 15,
-    fontSize: 16,
-  },
-  suggestionsContainer: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    marginTop: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  suggestionItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
   infoBox: {
     position: 'absolute',
     bottom: 30,
     left: 20,
     right: 20,
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 15,
     shadowColor: '#000',
@@ -645,15 +716,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  infoBoxHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingRight: 16,
+    marginTop: -16,
+    marginRight: -16,
+    marginBottom: 5,
+  },
   infoTitle: {
+    flex: 1,
     fontWeight: 'bold',
     fontSize: 18,
-    marginBottom: 5,
-    paddingRight: 25,
+    marginRight: 10,
   },
   infoDescription: {
     fontSize: 16,
-    color: '#333',
     marginBottom: 8,
   },
   conditionalText: {
@@ -674,19 +754,63 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#eee',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
   },
   closeButtonText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  downtownBanner: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    backgroundColor: WarningColors.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: WarningColors.border,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  downtownBannerText: {
+    flex: 1,
+    color: WarningColors.text,
+    fontSize: 13,
+    marginRight: 8,
+  },
+  downtownBannerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downtownBannerButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: WarningColors.buttonBackground,
+    marginRight: 6,
+  },
+  downtownBannerButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: WarningColors.buttonText,
+  },
+  downtownBannerDismiss: {
+    padding: 4,
+  },
+  downtownBannerDismissText: {
+    fontSize: 14,
+    color: WarningColors.text,
     fontWeight: 'bold',
   },
   permissionOverlay: {
@@ -714,7 +838,6 @@ const styles = StyleSheet.create({
   homeButton: {
     position: 'absolute',
     left: 20,
-    backgroundColor: 'white',
     borderRadius: 20,
     width: 40,
     height: 40,
@@ -733,18 +856,18 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
   },
 });
 
 function getSpotKey(spot: ParkingSpot, idx: number) {
   const id = spot.attributes.OBJECTID ?? 'id';
   const name = spot.attributes.ParkingName ?? 'name';
-  // Hash coordinates for uniqueness
-  const coordsString = JSON.stringify(spot.geometry.rings[0]);
+  // Hash coordinates for uniqueness. rings[0] should always be present after
+  // filterValidParkingSpots, but default to [] defensively since
+  // JSON.stringify(undefined) returns undefined, not "undefined".
+  const coordsString = JSON.stringify(spot.geometry.rings[0] ?? []);
   // Simple hash function for coordinates
   let coordHash = 0;
   for (let i = 0; i < coordsString.length; i++) {

@@ -2,9 +2,11 @@
 export interface LiveParkingData {
   zoneId: string;
   name: string;
-  availableSpaces: number;
+  // null means "we don't know" (API down, or this deck had no matching zone in
+  // the response) — this must be rendered differently from an actual 0.
+  availableSpaces: number | null;
   totalSpaces: number;
-  lastUpdated: string;
+  lastUpdated: string | null;
   status: 'available' | 'limited' | 'full' | 'unknown';
 }
 
@@ -54,80 +56,77 @@ function parseXMLResponse(xmlText: string): Record<string, { spaces: number; tim
   return zones;
 }
 
-// Fetch live parking data from JMU API
-export async function fetchLiveParkingData(): Promise<LiveParkingData[]> {
-  try {
-    console.log('Fetching live parking data from JMU API...');
+const FETCH_TIMEOUT_MS = 10000;
 
+// Fetch live parking data from the JMU API.
+// Throws on failure (network error, HTTP error, timeout) — callers (see
+// hooks/useLiveParkingData.ts) are expected to catch this and surface an
+// "unavailable" state rather than fabricated data. Per-deck gaps (a deck with
+// no matching zone in an otherwise-successful response) are NOT an error —
+// they resolve to availableSpaces: null / status: 'unknown' for that deck only.
+export async function fetchLiveParkingData(): Promise<LiveParkingData[]> {
+  console.log('Fetching live parking data from JMU API...');
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  let xmlText: string;
+  try {
     const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
         'Accept': 'application/xml, text/xml, */*',
         'User-Agent': 'JMU-Parking-App/1.0',
       },
+      signal: controller.signal,
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const xmlText = await response.text();
+    xmlText = await response.text();
     console.log('Received XML response, length:', xmlText.length);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
-    const zonesData = parseXMLResponse(xmlText);
-    console.log('Parsed zones data:', zonesData);
+  const zonesData = parseXMLResponse(xmlText);
+  console.log('Parsed zones data:', zonesData);
 
-    // Map the zones to our parking deck format
-    const parkingData: LiveParkingData[] = [];
+  const parkingData: LiveParkingData[] = Object.entries(PARKING_DECK_MAPPING).map(([deckName, deckInfo]) => {
+    const zoneData = zonesData[deckInfo.zoneId];
 
-    Object.entries(PARKING_DECK_MAPPING).forEach(([deckName, deckInfo]) => {
-      const zoneData = zonesData[deckInfo.zoneId];
+    if (!zoneData) {
+      // No data available for this deck — say so, don't invent a 0.
+      return {
+        zoneId: deckInfo.zoneId,
+        name: deckName,
+        availableSpaces: null,
+        totalSpaces: deckInfo.totalSpaces,
+        lastUpdated: null,
+        status: 'unknown' as const,
+      };
+    }
 
-      if (zoneData) {
-        const availableSpaces = zoneData.spaces;
-        const totalSpaces = deckInfo.totalSpaces;
+    const availableSpaces = zoneData.spaces;
+    const totalSpaces = deckInfo.totalSpaces;
 
-        // Determine status based on availability
-        let status: LiveParkingData['status'] = 'unknown';
-        if (availableSpaces > totalSpaces * 0.3) status = 'available';
-        else if (availableSpaces > 0) status = 'limited';
-        else status = 'full';
+    let status: LiveParkingData['status'] = 'unknown';
+    if (availableSpaces > totalSpaces * 0.3) status = 'available';
+    else if (availableSpaces > 0) status = 'limited';
+    else status = 'full';
 
-        parkingData.push({
-          zoneId: deckInfo.zoneId,
-          name: deckName,
-          availableSpaces,
-          totalSpaces,
-          lastUpdated: zoneData.timestamp,
-          status
-        });
-      } else {
-        // No data available for this deck
-        parkingData.push({
-          zoneId: deckInfo.zoneId,
-          name: deckName,
-          availableSpaces: 0,
-          totalSpaces: deckInfo.totalSpaces,
-          lastUpdated: new Date().toISOString(),
-          status: 'unknown'
-        });
-      }
-    });
-
-    console.log('Final parking data:', parkingData);
-    return parkingData;
-
-  } catch (error) {
-    console.error('Error fetching parking data:', error);
-
-    // Return placeholder data if API fails
-    return Object.entries(PARKING_DECK_MAPPING).map(([deckName, deckInfo]) => ({
+    return {
       zoneId: deckInfo.zoneId,
       name: deckName,
-      availableSpaces: 0,
-      totalSpaces: deckInfo.totalSpaces,
-      lastUpdated: new Date().toISOString(),
-      status: 'unknown' as const
-    }));
-  }
+      availableSpaces,
+      totalSpaces,
+      lastUpdated: zoneData.timestamp,
+      status,
+    };
+  });
+
+  console.log('Final parking data:', parkingData);
+  return parkingData;
 }

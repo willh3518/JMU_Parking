@@ -1,22 +1,24 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList, Keyboard, Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList, Keyboard, Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../constants/Colors';
+import { BrandColors, Colors, StatusColors } from '../constants/Colors';
 import { useFilters } from '../context/FilterContext';
 import jmuBuildings from '../data/jmu_buildings.json';
 import jmuParkingData from '../data/jmuParkingData.json';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useLiveParkingData } from '../hooks/useLiveParkingData';
+import { hapticSelection } from '../utils/haptics';
 
 // Type definitions (removed for JavaScript compatibility)
 
@@ -149,6 +151,7 @@ export default function MainScreen() {
   }, [selectedBuilding, liveParkingData, filters]);
 
   const handleBuildingSelect = (building) => {
+    hapticSelection();
     setSelectedBuilding(building);
     setSearchQuery(building.attributes?.BldgName || '');
     setShowSuggestions(false);
@@ -170,25 +173,32 @@ export default function MainScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.wrapper, { backgroundColor: '#450084' }]}>      
+    <SafeAreaView style={[styles.wrapper, { backgroundColor: BrandColors.purple }]}>
       <StatusBar style="light" />
       <View style={styles.headerBandFull}>
         <Text style={styles.headerTitle}>Find Parking</Text>
         <Text style={styles.headerSubtitle}>Where are you going on campus?</Text>
       </View>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
         {/* Search Input */}
         <View style={styles.searchContainer}>
+          <View style={styles.searchIconWrap} pointerEvents="none">
+            <Ionicons name="search" size={20} color={themeColors.icon} />
+          </View>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { backgroundColor: themeColors.surface, color: themeColors.text }]}
             placeholder="Search buildings (e.g., Wilson Hall, UREC, ISAT)..."
-            placeholderTextColor="#444"
+            placeholderTextColor={themeColors.icon}
             value={searchQuery}
             onChangeText={handleSearchChange}
             onFocus={() => setShowSuggestions(searchQuery.length > 0)}
           />
           {searchQuery.length > 0 && (
-            <Pressable style={styles.clearButton} onPress={clearSearch}>
+            <Pressable
+              style={[styles.clearButton, { backgroundColor: themeColors.icon }]}
+              onPress={clearSearch}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
               <Text style={styles.clearButtonText}>✕</Text>
             </Pressable>
           )}
@@ -196,13 +206,14 @@ export default function MainScreen() {
 
         {/* Filter Status Indicator */}
         {selectedBuilding && (
-          <View style={styles.filterStatusContainer}>
-            <Text style={styles.filterStatusText}>
+          <View style={[styles.filterStatusContainer, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+            <Text style={[styles.filterStatusText, { color: themeColors.textSecondary }]}>
               Showing: {getActiveFiltersText(filters)}
             </Text>
             <Pressable
               style={styles.settingsLink}
               onPress={() => router.push('/settings')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Text style={[styles.settingsLinkText, { color: themeColors.tint }]}>⚙️ Change Filters</Text>
             </Pressable>
@@ -211,27 +222,35 @@ export default function MainScreen() {
 
         {/* Building Suggestions */}
         {showSuggestions && filteredBuildings.length > 0 && (
-          <View style={styles.suggestionsContainer}>
+          <View style={[styles.suggestionsContainer, { backgroundColor: themeColors.background }]}>
             <FlatList
               data={filteredBuildings}
-              keyExtractor={(item) => item.attributes?.BldgName || Math.random().toString()}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={styles.suggestionItem}
-                  onPress={() => handleBuildingSelect(item)}
-                  key={item.attributes?.BldgName || Math.random()}
-                >
-                  <View style={styles.suggestionHeader}>
-                    <Text style={styles.suggestionName}>{item.attributes?.BldgName}</Text>
-                    {item.attributes?.BldgCode && (
-                      <Text style={[styles.suggestionCode, { color: themeColors.tint, backgroundColor: 'rgba(69,0,132,0.08)' }]}>{item.attributes.BldgCode}</Text>
+              keyExtractor={(item, index) => {
+                const buildingId = item.attributes?.OBJECTID ?? item.attributes?.BldgCode ?? item.attributes?.BldgName;
+                return String(buildingId ?? `building-${index}`);
+              }}
+              renderItem={({ item, index }) => {
+                const buildingKey = String(
+                  item.attributes?.OBJECTID ?? item.attributes?.BldgCode ?? item.attributes?.BldgName ?? `building-${index}`
+                );
+                return (
+                  <Pressable
+                    style={[styles.suggestionItem, { borderBottomColor: themeColors.border }]}
+                    onPress={() => handleBuildingSelect(item)}
+                    key={buildingKey}
+                  >
+                    <View style={styles.suggestionHeader}>
+                      <Text style={[styles.suggestionName, { color: themeColors.text }]}>{item.attributes?.BldgName}</Text>
+                      {item.attributes?.BldgCode && (
+                        <Text style={[styles.suggestionCode, { color: themeColors.tint, backgroundColor: 'rgba(69,0,132,0.08)' }]}>{item.attributes.BldgCode}</Text>
+                      )}
+                    </View>
+                    {item.attributes?.Address && (
+                      <Text style={[styles.suggestionAddress, { color: themeColors.textSecondary }]}>{item.attributes.Address}</Text>
                     )}
-                  </View>
-                  {item.attributes?.Address && (
-                    <Text style={styles.suggestionAddress}>{item.attributes.Address}</Text>
-                  )}
-                </Pressable>
-              )}
+                  </Pressable>
+                );
+              }}
               style={styles.suggestionsList}
               keyboardShouldPersistTaps="handled"
             />
@@ -242,63 +261,62 @@ export default function MainScreen() {
         {selectedBuilding && isLiveParkingLoading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={themeColors.tint} />
-            <Text style={styles.loadingText}>Finding best parking options...</Text>
+            <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>Finding best parking options...</Text>
           </View>
         )}
 
         {/* Parking Recommendations */}
         {selectedBuilding && !isLiveParkingLoading && recommendations.length > 0 && (
           <View style={styles.recommendationsContainer}>
-            <Text style={styles.recommendationsTitle}>
+            <Text style={[styles.recommendationsTitle, { color: themeColors.text }]}>
               Best parking for {selectedBuilding.attributes?.BldgName}:
             </Text>
             <FlatList
               data={recommendations}
               keyExtractor={(item) => item.name}
               renderItem={({ item }) => (
-                <View style={styles.recommendationItem}>
+                <View style={[styles.recommendationItem, { backgroundColor: themeColors.surface }]}>
                   <View style={styles.recommendationHeader}>
-                    <Text style={styles.recommendationName}>{item.name}</Text>
+                    <Text style={[styles.recommendationName, { color: themeColors.text }]}>{item.name}</Text>
                     <Text style={[styles.recommendationDistance, { color: themeColors.tint }]}>
                       {(item.distance * 5280).toFixed(0)} ft
                     </Text>
                   </View>
-                  <Text style={styles.recommendationType}>{item.type}</Text>
+                  <Text style={[styles.recommendationType, { color: themeColors.textSecondary }]}>{item.type}</Text>
                   {item.hasLiveData && item.availableSpaces !== undefined && (
                     <View style={styles.availabilityContainer}>
                       <View style={[
                         styles.availabilityDot,
-                        { backgroundColor: item.availableSpaces > 0 ? '#4CAF50' : '#F44336' }
+                        { backgroundColor: item.availableSpaces === null ? StatusColors.unknown : item.availableSpaces > 0 ? StatusColors.available : StatusColors.full }
                       ]} />
                       <Text style={[
                         styles.availabilityText,
-                        { color: item.availableSpaces > 0 ? '#4CAF50' : '#F44336' }
+                        { color: item.availableSpaces === null ? StatusColors.unknown : item.availableSpaces > 0 ? StatusColors.available : StatusColors.full }
                       ]}>
-                        {item.availableSpaces > 0
-                          ? `${item.availableSpaces} spaces available`
-                          : 'No spaces available'
+                        {item.availableSpaces === null
+                          ? 'No live data'
+                          : item.availableSpaces > 0
+                            ? `${item.availableSpaces} spaces available`
+                            : 'No spaces available'
                         }
                       </Text>
                     </View>
                   )}
-                  <Text style={styles.recommendationTiming}>{item.timing}</Text>
+                  <Text style={[styles.recommendationTiming, { color: themeColors.textSecondary }]}>{item.timing}</Text>
                 </View>
               )}
               style={styles.recommendationsList}
             />
             {/* Small See on Map button */}
             <TouchableOpacity
-              style={[styles.seeOnMapButton, { position: 'absolute', left: 0, right: 0, bottom: 8, marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center', zIndex: 10 }]}
+              style={[styles.seeOnMapButton, { backgroundColor: BrandColors.purple, position: 'absolute', left: 0, right: 0, bottom: 8, marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center', zIndex: 10 }]}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               onPress={() => {
                 // Pass the top 5 recommended parking spot names to explore page for zoom/highlight
                 if (selectedBuilding && recommendations.length > 0) {
-                  router.push({
-                    pathname: '/explore',
-                    params: {
-                      highlightBuilding: selectedBuilding.attributes?.BldgName,
-                      highlightIds: JSON.stringify(recommendations.map(r => r.name))
-                    }
-                  });
+                  router.push(
+                    `/explore?highlightBuilding=${encodeURIComponent(selectedBuilding.attributes?.BldgName || '')}&highlightIds=${encodeURIComponent(JSON.stringify(recommendations.map(r => r.name)))}`
+                  );
                 }
               }}
             >
@@ -310,7 +328,7 @@ export default function MainScreen() {
         {/* Default State */}
         {!selectedBuilding && (
           <View style={styles.defaultContainer}>
-            <Text style={styles.defaultText}>
+            <Text style={[styles.defaultText, { color: themeColors.textSecondary }]}>
               Search for any JMU building to find the closest parking spots with live availability
             </Text>
             <TouchableOpacity
@@ -329,14 +347,9 @@ export default function MainScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#f4f4f8',
-  },
-  headerBand: {
-    height: 56,
-    backgroundColor: '#450084',
   },
   headerBandFull: {
-    backgroundColor: '#450084',
+    backgroundColor: BrandColors.purple,
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -357,39 +370,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
   },
   searchContainer: {
     position: 'relative',
     marginBottom: 10,
+    justifyContent: 'center',
+  },
+  searchIconWrap: {
+    position: 'absolute',
+    left: 6,
+    top: 0,
+    bottom: 0,
+    width: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
   searchInput: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 26,
+    paddingLeft: 44,
+    paddingRight: 44,
     paddingVertical: 14,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
-    elevation: 3,
-    color: '#222', // Make input text darker
+    elevation: 2,
   },
   clearButton: {
     position: 'absolute',
@@ -398,7 +405,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -408,7 +414,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   suggestionsContainer: {
-    backgroundColor: 'white',
     borderRadius: 12,
     marginBottom: 20,
     shadowColor: '#000',
@@ -425,7 +430,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   suggestionHeader: {
     flexDirection: 'row',
@@ -436,7 +440,6 @@ const styles = StyleSheet.create({
   suggestionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     flex: 1,
   },
   suggestionCode: {
@@ -448,7 +451,6 @@ const styles = StyleSheet.create({
   },
   suggestionAddress: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
   loadingContainer: {
@@ -460,7 +462,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
   },
   recommendationsContainer: {
     flex: 1,
@@ -468,14 +469,12 @@ const styles = StyleSheet.create({
   recommendationsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 16,
   },
   recommendationsList: {
     flex: 1,
   },
   recommendationItem: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -494,7 +493,6 @@ const styles = StyleSheet.create({
   recommendationName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
     flex: 1,
   },
   recommendationDistance: {
@@ -503,7 +501,6 @@ const styles = StyleSheet.create({
   },
   recommendationType: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 8,
   },
   availabilityContainer: {
@@ -523,19 +520,7 @@ const styles = StyleSheet.create({
   },
   recommendationTiming: {
     fontSize: 12,
-    color: '#888',
     fontStyle: 'italic',
-  },
-  viewMapButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  viewMapButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
   },
   defaultContainer: {
     flex: 1,
@@ -557,12 +542,10 @@ const styles = StyleSheet.create({
   },
   defaultText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 20,
   },
   filterStatusContainer: {
-    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     padding: 12,
     marginVertical: 8,
@@ -570,11 +553,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e9ecef',
   },
   filterStatusText: {
     fontSize: 14,
-    color: '#495057',
     flex: 1,
   },
   settingsLink: {
@@ -586,9 +567,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   seeOnMapButton: {
-  marginTop: 4,
+    marginTop: 4,
     alignSelf: 'flex-end',
-    backgroundColor: '#450084',
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 8,

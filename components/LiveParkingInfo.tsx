@@ -1,4 +1,4 @@
-import { Colors } from '@/constants/Colors';
+import { Colors, StatusColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -27,11 +27,11 @@ export function LiveParkingInfo({
   // Get color based on parking status
   const getStatusColor = (status: LiveParkingData['status']) => {
     switch (status) {
-      case 'available': return '#4CAF50'; // Green
-      case 'limited': return '#FF9800';   // Orange  
-      case 'full': return '#F44336';      // Red
-      case 'unknown': return '#9E9E9E';   // Gray
-      default: return '#9E9E9E';
+      case 'available': return StatusColors.available;
+      case 'limited': return StatusColors.limited;
+      case 'full': return StatusColors.full;
+      case 'unknown': return StatusColors.unknown;
+      default: return StatusColors.unknown;
     }
   };
 
@@ -47,14 +47,15 @@ export function LiveParkingInfo({
   };
 
   // Format last updated time
-  const formatLastUpdated = (timestamp: string) => {
+  const formatLastUpdated = (timestamp: string | null) => {
+    if (!timestamp) return 'Unknown';
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: theme === 'light' ? '#f8f9fa' : '#1f2022', borderColor: theme === 'light' ? '#e9ecef' : '#2a2c2f' }, compact && styles.compactContainer]}>
+      <View style={[styles.container, { backgroundColor: themeColors.surface, borderColor: themeColors.border }, compact && styles.compactContainer]}>
         <View style={[styles.brandBar, { backgroundColor: themeColors.tint }]} />
         <ActivityIndicator size="small" color={themeColors.tint} />
         <Text style={[styles.loadingText, { color: themeColors.icon }]}>Loading live data...</Text>
@@ -64,10 +65,14 @@ export function LiveParkingInfo({
 
   if (error) {
     return (
-      <View style={[styles.container, { backgroundColor: theme === 'light' ? '#f8f9fa' : '#1f2022', borderColor: theme === 'light' ? '#e9ecef' : '#2a2c2f' }, compact && styles.compactContainer]}>
+      <View style={[styles.container, { backgroundColor: themeColors.surface, borderColor: themeColors.border }, compact && styles.compactContainer]}>
         <View style={[styles.brandBar, { backgroundColor: themeColors.tint }]} />
         <Text style={[styles.errorText]}>⚠️ Live data unavailable</Text>
-        <Pressable onPress={onRefresh} style={styles.retryButton}>
+        <Pressable
+          onPress={onRefresh}
+          style={styles.retryButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <Text style={[styles.retryText, { color: themeColors.tint }]}>Retry</Text>
         </Pressable>
       </View>
@@ -76,7 +81,7 @@ export function LiveParkingInfo({
 
   if (!liveData) {
     return (
-      <View style={[styles.container, { backgroundColor: theme === 'light' ? '#f8f9fa' : '#1f2022', borderColor: theme === 'light' ? '#e9ecef' : '#2a2c2f' }, compact && styles.compactContainer]}>
+      <View style={[styles.container, { backgroundColor: themeColors.surface, borderColor: themeColors.border }, compact && styles.compactContainer]}>
         <View style={[styles.brandBar, { backgroundColor: themeColors.tint }]} />
         <Text style={[styles.noDataText, { color: themeColors.icon }]}>No live data available</Text>
       </View>
@@ -88,18 +93,22 @@ export function LiveParkingInfo({
 
   if (compact) {
     return (
-      <View style={[styles.container, styles.compactContainer, { backgroundColor: theme === 'light' ? '#f8f9fa' : '#1f2022', borderColor: theme === 'light' ? '#e9ecef' : '#2a2c2f' }]}>        
+      <View style={[styles.container, styles.compactContainer, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>        
         <View style={[styles.brandBar, { backgroundColor: themeColors.tint }]} />
         <View style={styles.compactRow}>
           <View style={[styles.statusIndicator, { backgroundColor: statusColor }]} />
-          <Text style={[styles.compactSpaces, { color: themeColors.text }]}>            
-            {liveData.availableSpaces} spaces
+          <Text style={[styles.compactSpaces, { color: themeColors.text }]}>
+            {liveData.availableSpaces !== null ? `${liveData.availableSpaces} spaces` : 'No live data'}
           </Text>
           <Text style={[styles.compactStatus, { color: statusColor }]}>            
             {statusText}
           </Text>
         </View>
-        <Pressable onPress={onRefresh} style={styles.refreshButton}>
+        <Pressable
+          onPress={onRefresh}
+          style={styles.refreshButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <Text style={[styles.refreshText, { color: themeColors.tint }]}>🔄</Text>
         </Pressable>
       </View>
@@ -107,19 +116,25 @@ export function LiveParkingInfo({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme === 'light' ? '#f8f9fa' : '#1f2022', borderColor: theme === 'light' ? '#e9ecef' : '#2a2c2f' }]}>      
+    <View style={[styles.container, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>      
       <View style={[styles.brandBar, { backgroundColor: themeColors.tint }]} />
       <View style={styles.header}>
-        <Text style={[styles.title, { color: '#11181C' }]}>🅿️ Live Parking Data</Text>
-        <Pressable onPress={onRefresh} style={styles.refreshButton}>
+        <Text style={[styles.title, { color: themeColors.text }]}>🅿️ Live Parking Data</Text>
+        <Pressable
+          onPress={onRefresh}
+          style={styles.refreshButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <Text style={[styles.refreshText, { color: themeColors.tint }]}>🔄 Refresh</Text>
         </Pressable>
       </View>
       
       <View style={styles.dataRow}>
         <View style={[styles.statusIndicator, { backgroundColor: statusColor }]} />
-        <Text style={[styles.spacesText, { color: '#11181C' }]}>          
-          {liveData.availableSpaces} of {liveData.totalSpaces} spaces available
+        <Text style={[styles.spacesText, { color: themeColors.text }]}>
+          {liveData.availableSpaces !== null
+            ? `${liveData.availableSpaces} of ${liveData.totalSpaces} spaces available`
+            : 'No live data available'}
         </Text>
       </View>
       
@@ -127,7 +142,7 @@ export function LiveParkingInfo({
         Status: {statusText}
       </Text>
       
-      <Text style={[styles.lastUpdated, { color: '#666' }]}>        
+      <Text style={[styles.lastUpdated, { color: themeColors.textSecondary }]}>
         Last updated: {formatLastUpdated(liveData.lastUpdated)}
       </Text>
     </View>
@@ -136,12 +151,10 @@ export function LiveParkingInfo({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8f9fa',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -169,7 +182,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
   },
   dataRow: {
     flexDirection: 'row',
@@ -189,12 +201,10 @@ const styles = StyleSheet.create({
   },
   spacesText: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
   compactSpaces: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '500',
     marginRight: 8,
   },
@@ -209,7 +219,6 @@ const styles = StyleSheet.create({
   },
   lastUpdated: {
     fontSize: 12,
-    color: '#666',
   },
   refreshButton: {
     padding: 4,
@@ -219,12 +228,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#666',
     marginLeft: 8,
   },
   errorText: {
     fontSize: 14,
-    color: '#F44336',
+    color: StatusColors.full,
   },
   retryButton: {
     marginLeft: 8,
@@ -235,6 +243,5 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     fontSize: 14,
-    color: '#666',
   },
 });

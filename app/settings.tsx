@@ -3,13 +3,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { useFilters } from '../context/FilterContext';
 import { useColorScheme } from '../hooks/useColorScheme';
+import { hapticSelection } from '../utils/haptics';
 
 // This is a generic checkbox for most options
 const Checkbox = ({ label, value, onValueChange }: { label: string; value: boolean; onValueChange: () => void }) => {
   const theme = useColorScheme() ?? 'light';
   const themeColors = Colors[theme];
   return (
-    <Pressable style={styles.checkboxContainer} onPress={onValueChange}>
+    <Pressable
+      style={styles.checkboxContainer}
+      onPress={onValueChange}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
       <View style={styles.checkboxLabelContainer}>
         <View
           style={[
@@ -20,7 +25,7 @@ const Checkbox = ({ label, value, onValueChange }: { label: string; value: boole
         >
           {value && <Text style={styles.checkmark}>✓</Text>}
         </View>
-        <Text style={[styles.label, { color: '#11181C' }]}>{label}</Text>
+        <Text style={[styles.label, { color: themeColors.text }]}>{label}</Text>
       </View>
     </Pressable>
   );
@@ -32,6 +37,7 @@ export default function SettingsScreen() {
   const { filters, setFilters } = useFilters();
 
   const toggleFilter = (key: keyof typeof filters) => {
+    hapticSelection();
     setFilters(prevFilters => ({
       ...prevFilters,
       [key]: !prevFilters[key],
@@ -61,18 +67,26 @@ export default function SettingsScreen() {
   const activeCount = Object.values(filters).filter(Boolean).length;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
-      <View style={[styles.header, { borderBottomColor: theme === 'light' ? '#ddd' : '#2a2c2f' }]}>
-        <Text style={[styles.title, { color: '#11181C' }]}>Map Filters</Text>
-        <Text style={[styles.subtitle, { color: '#11181C' }]}>Select which parking types to display on the map and list.</Text>
-        <Text style={[styles.activeCount, { color: '#11181C' }]}>{activeCount} of 5 types selected</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+        <Text style={[styles.title, { color: themeColors.text }]}>Map Filters</Text>
+        <Text style={[styles.subtitle, { color: themeColors.text }]}>Select which parking types to display on the map and list.</Text>
+        <Text style={[styles.activeCount, { color: themeColors.text }]}>{activeCount} of 5 types selected</Text>
 
         {/* Control Buttons */}
         <View style={styles.controlButtons}>
-          <Pressable style={[styles.controlButton, { backgroundColor: themeColors.tint }]} onPress={selectAll}>
+          <Pressable
+            style={[styles.controlButton, { backgroundColor: themeColors.tint }]}
+            onPress={selectAll}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
             <Text style={styles.controlButtonText}>Select All</Text>
           </Pressable>
-          <Pressable style={[styles.controlButton, { backgroundColor: themeColors.tint }]} onPress={clearAll}>
+          <Pressable
+            style={[styles.controlButton, { backgroundColor: themeColors.tint }]}
+            onPress={clearAll}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
             <Text style={styles.controlButtonText}>Clear All</Text>
           </Pressable>
         </View>
@@ -112,21 +126,17 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#11181C',
   },
   subtitle: {
     fontSize: 16,
-    color: '#11181C',
     marginTop: 5,
   },
   optionsContainer: {
@@ -162,14 +172,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    color: '#11181C',
   },
   infoIcon: {
     fontSize: 22,
   },
   activeCount: {
     fontSize: 14,
-    color: '#11181C',
     marginTop: 8,
     fontWeight: '500',
   },
