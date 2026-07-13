@@ -1,16 +1,22 @@
 {
   "expo": {
-    "name": "NewestFreeParkingApp",
+    "name": "Campus Park",
     "slug": "NewestFreeParkingApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "NewestFreeParkingApp",
+    "scheme": ["newestfreeparkingapp"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.samrack.NewestFreeParkingApp",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to show your position on the campus parking map and help you find nearby parking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses your location to show your position on the campus parking map and help you find nearby parking.",
+        "LSApplicationQueriesSchemes": ["waze", "comgooglemaps"]
+      }
     },
     "android": {
       "adaptiveIcon": {

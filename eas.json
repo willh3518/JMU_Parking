@@ -12,10 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "VARIABLE_NAME": "YOUR_VALUE"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
