@@ -26,18 +26,34 @@ const SCENE_DELEGATE_SWIFT = `
 ${SCENE_DELEGATE_MARKER} {
   var window: UIWindow?
 
+  // Under the scene lifecycle iOS delivers links to the scene instead of the
+  // AppDelegate. Every link is handed back to the AppDelegate's own handlers so
+  // ExpoAppDelegate subscribers (expo-linking, which expo-router reads the
+  // initial URL from) and RCTLinkingManager see it exactly as before.
+  private var appDelegate: AppDelegate? {
+    UIApplication.shared.delegate as? AppDelegate
+  }
+
   func scene(
     _ scene: UIScene,
     willConnectTo session: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
     guard let windowScene = scene as? UIWindowScene,
-          let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+          let appDelegate = appDelegate,
           let factory = appDelegate.reactNativeFactory else { return }
 
+    // Register a cold-start link before React Native asks for its initial URL.
     var launchOptions: [UIApplication.LaunchOptionsKey: Any] = [:]
     if let url = connectionOptions.urlContexts.first?.url {
       launchOptions[.url] = url
+      _ = appDelegate.application(UIApplication.shared, open: url, options: [:])
+    }
+    if let userActivity = connectionOptions.userActivities.first {
+      _ = appDelegate.application(
+        UIApplication.shared,
+        continue: userActivity,
+        restorationHandler: { _ in })
     }
 
     let window = UIWindow(windowScene: windowScene)
@@ -50,14 +66,13 @@ ${SCENE_DELEGATE_MARKER} {
     window.makeKeyAndVisible()
   }
 
-  // Deep links delivered while the app is running arrive here, not on the AppDelegate.
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
     guard let url = URLContexts.first?.url else { return }
-    _ = RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
+    _ = appDelegate?.application(UIApplication.shared, open: url, options: [:])
   }
 
   func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-    _ = RCTLinkingManager.application(
+    _ = appDelegate?.application(
       UIApplication.shared,
       continue: userActivity,
       restorationHandler: { _ in })

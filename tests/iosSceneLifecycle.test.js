@@ -83,12 +83,44 @@ test('addSceneDelegate appends a SceneDelegate that starts React Native in the s
   assert.match(result, /makeKeyAndVisible\(\)/);
 });
 
-test('addSceneDelegate forwards deep links that arrive through the scene', () => {
-  const result = addSceneDelegate(SDK54_APP_DELEGATE);
+// Deep links must go through the AppDelegate's own open/continue handlers:
+// ExpoAppDelegate fans those out to expo-linking, which is where expo-router
+// reads the initial URL on iOS. Calling RCTLinkingManager directly skips
+// expo-linking, so cold-start links landed on "/" instead of the target route.
+function sceneWillConnectBody(swift) {
+  const start = swift.indexOf('willConnectTo session');
+  const end = swift.indexOf('func scene(_ scene: UIScene, openURLContexts');
+  return swift.slice(start, end);
+}
 
-  assert.match(result, /connectionOptions\.urlContexts\.first\?\.url/);
-  assert.match(result, /func scene\(_ scene: UIScene, openURLContexts/);
-  assert.match(result, /RCTLinkingManager\.application/);
+test('addSceneDelegate hands cold-start URLs to the AppDelegate before React Native starts', () => {
+  const body = sceneWillConnectBody(addSceneDelegate(SDK54_APP_DELEGATE));
+
+  const forward = body.indexOf('appDelegate.application(UIApplication.shared, open: url');
+  const start = body.indexOf('startReactNative(');
+  assert.ok(forward !== -1, 'cold-start URL must be forwarded to the AppDelegate');
+  assert.ok(forward < start, 'URL must be registered before React Native reads its initial URL');
+  assert.match(body, /connectionOptions\.urlContexts\.first\?\.url/);
+});
+
+test('addSceneDelegate hands cold-start universal links to the AppDelegate', () => {
+  const body = sceneWillConnectBody(addSceneDelegate(SDK54_APP_DELEGATE));
+
+  assert.match(body, /connectionOptions\.userActivities\.first/);
+  assert.match(body, /appDelegate\.application\(\s*UIApplication\.shared,\s*continue: userActivity/);
+});
+
+test('addSceneDelegate hands warm deep links to the AppDelegate', () => {
+  const result = addSceneDelegate(SDK54_APP_DELEGATE);
+  const warm = result.slice(result.indexOf('func scene(_ scene: UIScene, openURLContexts'));
+
+  assert.match(warm, /\.application\(UIApplication\.shared, open: url/);
+  assert.match(warm, /func scene\(_ scene: UIScene, continue userActivity: NSUserActivity\)/);
+  assert.doesNotMatch(
+    result.slice(result.indexOf('class SceneDelegate')),
+    /RCTLinkingManager\.application/,
+    'SceneDelegate must go through the AppDelegate, not call RCTLinkingManager directly'
+  );
 });
 
 test('addSceneDelegate is idempotent', () => {
