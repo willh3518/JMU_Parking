@@ -40,7 +40,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "./plugins/withIOSSceneLifecycle"
     ],
     "experiments": {
       "typedRoutes": true
